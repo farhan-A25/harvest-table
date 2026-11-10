@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CafeLoop — Pricing</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#FFF9F1;color:#3B2416;margin:0;padding:28px 18px 60px}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(640px 400px at 110% -40px,rgba(230,51,41,.12),transparent 60%),radial-gradient(560px 420px at -100px 50%,rgba(245,179,1,.14),transparent 60%)}
+.wrap{max-width:620px;margin:0 auto}
+h1{font-family:'Fraunces',serif;font-size:clamp(38px,9vw,56px);line-height:1;text-align:center}
+h1 em{font-style:normal;background:linear-gradient(135deg,#FFB800,#FF7A00 52%,#E63329);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:#9A7B5F;line-height:1.6}
+.card{background:#FFFDF9;border:1px solid #F0DFC4;border-radius:24px;box-shadow:0 20px 44px rgba(146,96,32,.16);padding:28px;margin-top:26px;text-align:center;animation:up .6s cubic-bezier(.2,.9,.3,1.15) both}
+@keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.price{font-family:'Fraunces',serif;font-size:52px;font-weight:900}
+.feat{text-align:left;line-height:2.05;font-size:15.5px;max-width:380px;margin:18px auto 0}
+.btn{display:inline-block;margin-top:24px;background:linear-gradient(135deg,#FFB800,#FF7A00 52%,#E63329);color:#fff;font-weight:800;padding:15px 30px;border-radius:14px;text-decoration:none;box-shadow:0 12px 24px rgba(230,51,41,.3)}
+.small{font-size:12.5px;color:#9A7B5F;text-align:center;margin-top:16px;line-height:1.6}
+a{color:#D35400;font-weight:700}
+</style></head><body><div class="wrap">
+<p style="text-align:center;font-size:30px">☕</p>
+<h1>One plan.<br><em>Everything in.</em></h1>
+<p class="sub">No tiers. No seat limits. No add-ons. CafeLoop Pro is the whole product — the same for a 4-table cafe and a 40-table one.</p>
+<div class="card">
+<div id="plan-name" style="font-weight:800;letter-spacing:.05em">CAFELOOP PRO</div>
+<div class="price" id="plan-price">₹1,499<span style="font-size:19px;color:#9A7B5F">/month</span></div>
+<div style="color:#9A7B5F;font-weight:700">or ₹14,990/year — 2 months free</div>
+<div class="feat">
+✅ Table QR ordering (unlimited tables)<br>
+✅ Orders live on your phone, with ready-times<br>
+✅ Automatic stamp cards — 5 stamps = free drink<br>
+✅ Reward codes, issued &amp; tracked automatically<br>
+✅ Come Back list with one-tap WhatsApp offers<br>
+✅ Live dashboard — orders, revenue, repeat %<br>
+✅ Full menu control, unlimited customers
+</div>
+<a class="btn" href="/">Start with CafeLoop →</a>
+</div>
+<p class="small">Pay by UPI QR after signup; your account is activated by the CafeLoop team and unlocks automatically.<br><a href="/">Home</a> · <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a></p>
+</div>
+<script>
+fetch("/api/plans").then(r=>r.json()).then(d=>{const p=d.plans&&d.plans[0];if(!p)return;
+document.getElementById("plan-name").textContent=p.name.toUpperCase();
+document.getElementById("plan-price").innerHTML="₹"+p.monthly.toLocaleString("en-IN")+'<span style="font-size:19px;color:#9A7B5F">/month</span>';}).catch(()=>{});
+</script></body></html>

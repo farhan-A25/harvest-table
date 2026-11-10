@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CafeLoop — Owner App</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FFF9F1; --cream2:#FBEEDC; --paper:#FFFDF9; --ink:#3B2416; --ink2:#6B4A2B;
+  --muted:#9A7B5F; --line:#F0DFC4; --coffee:#6F4E37; --gold:#B7791F; --red:#E63329;
+  --grad:linear-gradient(135deg,#FFB800 0%,#FF7A00 52%,#E63329 100%);
+  --grad-soft:linear-gradient(135deg,#FFE3D3,#FDEBC8);
+  --shadow:0 12px 28px rgba(146,96,32,.11); --shadow-lg:0 20px 44px rgba(146,96,32,.17);
+  --r:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--cream);color:var(--ink);min-height:100dvh;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:
+  radial-gradient(640px 400px at 110% -40px,rgba(230,51,41,.12),transparent 60%),
+  radial-gradient(560px 420px at -100px 40%,rgba(245,179,1,.13),transparent 60%),
+  linear-gradient(180deg,#FFF9F1,#FDF3E3)}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit}
+.hidden{display:none!important}
+.wrap{max-width:560px;margin:0 auto;padding:20px 16px 110px}
+h1.display{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(38px,10.5vw,50px);line-height:1.02;letter-spacing:-.015em}
+h1.display em, .grad-text{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand{display:flex;align-items:center;gap:10px;font-family:'Fraunces',serif;font-weight:900;font-size:22px}
+.brand .logo{width:42px;height:42px;border-radius:14px;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;font-size:21px;box-shadow:0 10px 22px rgba(230,51,41,.3);animation:bob 3.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-5px) rotate(3deg)}}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;margin-top:14px;animation:fadeUp .55s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:none}}
+.field{margin-top:13px}
+.field label{display:block;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:13px;font-size:15px;background:#fff;color:var(--ink);outline:none;transition:border-color .2s,box-shadow .2s}
+.field input:focus,.field select:focus{border-color:#F97316;box-shadow:0 0 0 4px rgba(249,115,22,.14)}
+.field .err{color:#C0392B;font-size:12.5px;font-weight:700;margin-top:5px;min-height:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:14px;padding:14px 20px;font-size:15px;font-weight:800;transition:transform .15s,box-shadow .2s;text-decoration:none}
+.btn:active{transform:scale(.96)}
+.btn-grad{background:var(--grad);color:#fff;box-shadow:0 12px 24px rgba(230,51,41,.28)}
+.btn-ghost{background:#fff;color:var(--ink2);border:1.5px solid var(--line)}
+.btn-block{width:100%}
+.btn-sm{padding:10px 14px;font-size:13.5px;border-radius:12px}
+.btn-green{background:linear-gradient(135deg,#4CAF6D,#2E7D46);color:#fff;box-shadow:0 10px 20px rgba(46,125,70,.28)}
+.btn-ink{background:var(--ink);color:#FBEEDC}
+.banner{border-radius:14px;padding:12px 15px;font-size:14px;font-weight:600;margin-top:14px;line-height:1.5;animation:fadeUp .5s both}
+.banner.err{background:#FDECEC;color:#A33;border:1px solid #F5C6C6}
+.banner.ok{background:#EAF7EA;color:#256B25;border:1px solid #BEE3BE}
+.sub{color:var(--muted);font-size:14px;line-height:1.55;margin-top:8px}
+.link{color:#D35400;font-weight:700;background:none;border:none;font-size:14px;padding:0}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:13px;font-size:15px;font-weight:800;color:var(--ink);transition:transform .15s, box-shadow .2s}
+.gbtn:hover{box-shadow:var(--shadow)}
+.gbtn:active{transform:scale(.97)}
+.divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12.5px;font-weight:700;margin:18px 0 4px}
+.divider::before,.divider::after{content:"";flex:1;height:1.5px;background:var(--line)}
+.otp-input{letter-spacing:.5em;text-align:center;font-size:24px!important;font-weight:800}
+
+/* app chrome */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:4px}
+.topbar .cafe{font-family:'Fraunces',serif;font-size:20px;font-weight:800}
+.pill-live{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 11px;font-size:12px;font-weight:800;color:var(--ink2)}
+.pill-live .dot{width:7px;height:7px;border-radius:50%;background:#3E9B4F;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.5);opacity:.55}}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;animation:fadeUp .55s both}
+.stat .ic{font-size:21px;background:var(--grad-soft);width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:9px}
+.stat b{font-family:'Fraunces',serif;font-size:27px;font-weight:900;display:block;line-height:1}
+.stat span{font-size:12.5px;color:var(--muted);font-weight:700}
+.alert-new{margin-top:14px;background:linear-gradient(135deg,#E63329,#F97316);color:#fff;border-radius:var(--r);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 16px 32px rgba(230,51,41,.35);cursor:pointer;animation:alertPulse 1.6s infinite;border:none;width:100%;text-align:left}
+@keyframes alertPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
+.alert-new b{font-size:16.5px}.alert-new small{display:block;opacity:.85;font-size:12.5px;margin-top:2px}
+.alert-new .cnt{font-family:'Fraunces',serif;font-size:32px;font-weight:900;background:rgba(255,255,255,.22);border-radius:14px;padding:2px 14px}
+
+/* orders */
+.order-card{background:var(--paper);border:1.5px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;margin-top:12px;animation:fadeUp .45s both}
+.order-card.is-new{border-color:#F5B301;background:linear-gradient(180deg,#FFFDF4,#FFFDF9);box-shadow:0 0 0 3px rgba(245,179,1,.35),var(--shadow-lg)}
+.order-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.order-head .tbl{font-family:'Fraunces',serif;font-size:19px;font-weight:900}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px}
+.badge.new{background:var(--grad);color:#fff;animation:pulse 1.3s infinite}
+.badge.acc{background:#FDF3E2;color:#9A6A12}
+.badge.prep{background:#EAF2FD;color:#2456A6}
+.badge.served{background:#EAF7EA;color:#256B25}
+.badge.done{background:#F1E8DA;color:var(--muted)}
+.badge.paid{background:#EAF7EA;color:#256B25}
+.badge.unpaid{background:#FDECEC;color:#A33}
+.order-items{color:var(--ink2);font-size:14px;line-height:1.55;margin-top:8px}
+.order-meta{color:var(--muted);font-size:12.5px;margin-top:5px}
+.order-total{font-family:'Fraunces',serif;font-size:18px;font-weight:900}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;color:var(--ink2);transition:all .18s}
+.chip.on{background:var(--grad);color:#fff;border-color:transparent;transform:scale(1.07);box-shadow:0 8px 16px rgba(230,51,41,.28)}
+.order-actions{display:flex;gap:9px;margin-top:13px;flex-wrap:wrap}
+.order-actions .btn{flex:1;min-height:50px;font-size:15px}
+.eta{font-weight:800;color:#D35400;font-size:13.5px}
+
+/* customers */
+.cust{display:flex;gap:12px;align-items:flex-start}
+.avatar{width:46px;height:46px;flex:none;border-radius:15px;background:var(--grad-soft);display:flex;align-items:center;justify-content:center;font-size:20px}
+.dots{display:inline-flex;gap:4px;margin-left:6px;vertical-align:middle}
+.dots i{width:11px;height:11px;border-radius:50%;border:2px solid #E4CBA3;background:#FFF9F1}
+.dots i.f{background:var(--grad);border-color:transparent}
+.wa-btn{display:inline-flex;align-items:center;gap:7px;background:#25D366;color:#fff;font-weight:800;font-size:13.5px;border:none;border-radius:12px;padding:10px 14px;text-decoration:none;box-shadow:0 8px 18px rgba(37,211,102,.3);transition:transform .15s}
+.wa-btn:active{transform:scale(.94)}
+
+/* menu manager */
+.mitem{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1.5px dashed var(--line)}
+.mitem:last-child{border-bottom:none}
+.mitem .em{font-size:26px;background:var(--grad-soft);width:50px;height:50px;border-radius:15px;display:flex;align-items:center;justify-content:center;flex:none}
+.switch{position:relative;width:48px;height:27px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.switch .tr{position:absolute;inset:0;background:#EAD9BC;border-radius:999px;transition:.25s}
+.switch .tr::before{content:"";position:absolute;width:21px;height:21px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.25s;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.switch input:checked + .tr{background:linear-gradient(135deg,#4CAF6D,#2E7D46)}
+.switch input:checked + .tr::before{transform:translateX(21px)}
+
+/* bottom nav */
+.navbar{position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(255,253,249,.92);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+.navbar .in{max-width:560px;margin:0 auto;display:flex}
+.navbar button{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:800;color:var(--muted);padding:6px 2px;border-radius:14px;position:relative;transition:color .2s}
+.navbar button .ic{font-size:21px;transition:transform .25s cubic-bezier(.2,.9,.3,1.5)}
+.navbar button.on{color:var(--ink)}
+.navbar button.on .ic{transform:translateY(-2px) scale(1.15)}
+.navbar button .nbadge{position:absolute;top:0;right:calc(50% - 21px);background:var(--grad);color:#fff;font-size:10px;font-weight:800;min-width:19px;height:19px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 5px;animation:pulse 1.3s infinite}
+
+/* payment */
+.qrbox{text-align:center}
+.qrbox img{width:230px;height:230px;object-fit:contain;border-radius:18px;border:1.5px solid var(--line);background:#fff;padding:8px;box-shadow:var(--shadow)}
+.seg{display:flex;background:#fff;border:1px solid var(--line);border-radius:13px;padding:4px;gap:4px;margin-top:14px}
+.seg button{flex:1;padding:11px;border-radius:10px;font-size:14px;font-weight:800;color:var(--muted);background:none;border:none;min-height:46px;transition:all .2s}
+.seg button.on{background:var(--grad);color:#fff;box-shadow:0 8px 18px rgba(230,51,41,.3)}
+.spin{width:17px;height:17px;border:3px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;display:inline-block;animation:sp 0.8s linear infinite;vertical-align:-3px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.unlock-pop{font-size:56px;animation:popIn .6s cubic-bezier(.2,.9,.3,1.5) both;text-align:center}
+@keyframes popIn{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.small{font-size:12.5px;color:var(--muted);line-height:1.55}
+.center{text-align:center}
+.mt{margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ================= LOGIN ================= -->
+<section id="login-view" class="hidden">
+  <div class="brand"><span class="logo">☕</span> Cafe<span class="grad-text">Loop</span></div>
+  <h1 class="display" style="margin-top:22px">Your regulars,<br><em>on repeat.</em></h1>
+  <p class="sub">The cafe app that turns one-time visitors into regulars — QR ordering, automatic stamps, free-drink rewards and a Come Back list, all in your pocket.</p>
+  <div id="auth-error" class="banner err hidden"></div>
+  <div class="card">
+    <div id="google-box" class="hidden">
+      <a class="gbtn" href="/auth/google"><span style="font-size:18px">G</span> Continue with Google</a>
+      <div class="divider">or with email</div>
+    </div>
+    <div class="field"><label for="li-email">Email</label><input id="li-email" type="email" placeholder="you@yourcafe.in"><div class="err" id="e-li"></div></div>
+    <div class="field"><label for="li-pass">Password</label><input id="li-pass" type="password" placeholder="Your password"><div class="err"></div></div>
+    <button class="btn btn-grad btn-block mt" onclick="doLogin()">Log In →</button>
+    <p class="center mt"><button class="link" onclick="showView('forgot')">Forgot password?</button></p>
+    <p class="center mt sub">New to CafeLoop? <button class="link" onclick="showView('signup')">Create your cafe account</button></p>
+  </div>
+  <p class="center small mt">By continuing you agree to the <a href="/terms" style="color:var(--ink2)">Terms</a> & <a href="/privacy" style="color:var(--ink2)">Privacy Policy</a>.</p>
+</section>
+
+<!-- ================= SIGNUP ================= -->
+<section id="signup-view" class="hidden">
+  <div class="brand"><span class="logo">☕</span> Cafe<span class="grad-text">Loop</span></div>
+  <h1 class="display" style="margin-top:22px">Open your<br><em>cafe account.</em></h1>
+  <div class="card">
+    <div class="field"><label for="su-owner">Your full name</label><input id="su-owner" placeholder="e.g. Rohan Sharma"><div class="err" id="fe-owner_name"></div></div>
+    <div class="field"><label for="su-cafe">Cafe name</label><input id="su-cafe" placeholder="e.g. Brew & Bean"><div class="err" id="fe-cafe_name"></div></div>
+    <div class="field"><label for="su-email">Email</label><input id="su-email" type="email" placeholder="you@yourcafe.in"><div class="err" id="fe-email"></div></div>
+    <div class="field"><label for="su-mobile">Mobile number</label><input id="su-mobile" inputmode="numeric" maxlength="13" placeholder="10-digit mobile number"><div class="err" id="fe-mobile"></div></div>
+    <div class="field"><label for="su-pass">Password (6+ characters)</label><input id="su-pass" type="password" placeholder="Choose a password"><div class="err" id="fe-password"></div></div>
+    <div id="su-error" class="banner err hidden"></div>
+    <button class="btn btn-grad btn-block mt" onclick="doSignup()">Create Account →</button>
+    <p class="center mt sub">Already have an account? <button class="link" onclick="showView('login')">Log in</button></p>
+  </div>
+</section>
+
+<!-- ================= OTP ================= -->
+<section id="otp-view" class="hidden">
+  <div class="brand"><span class="logo">☕</span> Cafe<span class="grad-text">Loop</span></div>
+  <h1 class="display" style="margin-top:22px">Check your<br><em>email.</em></h1>
+  <p class="sub">We sent a 6-digit code to <b id="otp-email"></b>. Enter it here — it works for 10 minutes.</p>
+  <div class="card">
+    <div class="field"><label for="otp-code">6-digit code</label><input id="otp-code" class="otp-input" inputmode="numeric" maxlength="6" placeholder="••••••"><div class="err" id="otp-err"></div></div>
+    <button class="btn btn-grad btn-block mt" onclick="doVerifyOtp()">Verify →</button>
+    <p class="center mt"><button class="link" id="otp-resend" onclick="doResendOtp()">Resend code</button></p>
+    <p class="center mt"><button class="link" onclick="doLogout()">Use a different account</button></p>
+  </div>
+</section>
+
+<!-- ================= FORGOT ================= -->
+<section id="forgot-view" class="hidden">
+  <div class="brand"><span class="logo">☕</span> Cafe<span class="grad-text">Loop</span></div>
+  <h1 class="display" style="margin-top:22px">Reset your<br><em>password.</em></h1>
+  <div class="card" id="forgot-step1">
+    <div class="field"><label for="fp-email">Email</label><input id="fp-email" type="email" placeholder="you@yourcafe.in"><div class="err"></div></div>
+    <button class="btn btn-grad btn-block mt" onclick="doForgot()">Send Reset Code →</button>
+    <p class="center mt"><button class="link" onclick="showView('login')">Back to login</button></p>
+  </div>
+  <div class="card hidden" id="forgot-step2">
+    <div class="field"><label for="fp-code">6-digit reset code</label><input id="fp-code" class="otp-input" inputmode="numeric" maxlength="6" placeholder="••••••"><div class="err" id="fp-err"></div></div>
+    <div class="field"><label for="fp-new">New password (6+ characters)</label><input id="fp-new" type="password" placeholder="New password"><div class="err"></div></div>
+    <button class="btn btn-grad btn-block mt" onclick="doReset()">Set New Password →</button>
+  </div>
+</section>
+
+<!-- ================= DETAILS ================= -->
+<section id="details-view" class="hidden">
+  <div class="brand"><span class="logo">☕</span> Cafe<span class="grad-text">Loop</span></div>
+  <h1 class="display" style="margin-top:22px">Your cafe,<br><em>one last step.</em></h1>
+  <p class="sub">Fill this once — CafeLoop will never ask you again on this account.</p>
+  <div class="card">
+    <p style="font-weight:800">🏠 CAFE DETAILS</p>
+    <div class="field"><label for="d-cafe">Cafe name</label><input id="d-cafe" placeholder="e.g. Brew & Bean"><div class="err" id="de-cafe_name"></div></div>
+    <div class="field"><label for="d-addr">Cafe address</label><input id="d-addr" placeholder="Street, area, landmark"><div class="err" id="de-cafe_address"></div></div>
+    <div class="field"><label for="d-city">City</label><input id="d-city" placeholder="e.g. Hyderabad"><div class="err" id="de-cafe_city"></div></div>
+    <div class="field"><label for="d-phone">Cafe phone</label><input id="d-phone" inputmode="numeric" maxlength="13" placeholder="10-digit phone number"><div class="err" id="de-cafe_phone"></div></div>
+    <p style="font-weight:800;margin-top:20px">👤 OWNER DETAILS</p>
+    <div class="field"><label for="d-owner">Your full name</label><input id="d-owner" placeholder="e.g. Rohan Sharma"><div class="err" id="de-owner_name"></div></div>
+    <div class="field"><label for="d-mobile">Mobile number</label><input id="d-mobile" inputmode="numeric" maxlength="13" placeholder="10-digit mobile number"><div class="err" id="de-mobile"></div></div>
+    <div class="field"><label for="d-wa">WhatsApp number (optional)</label><input id="d-wa" inputmode="numeric" maxlength="13" placeholder="10-digit WhatsApp number"><div class="err" id="de-whatsapp"></div></div>
+    <div id="d-error" class="banner err hidden"></div>
+    <button class="btn btn-grad btn-block mt" onclick="doSaveDetails()">Save & Continue →</button>
+  </div>
+</section>
+
+<!-- ================= PAYMENT / UPGRADE ================= -->
+<section id="upgrade-view" class="hidden">
+  <div class="brand"><span class="logo">☕</span> Cafe<span class="grad-text">Loop</span></div>
+  <h1 class="display" style="margin-top:22px">One plan.<br><em>Everything in.</em></h1>
+  <p class="sub">CafeLoop Pro — unlimited tables & customers, QR ordering, automatic stamps & rewards, Come Back list and the live dashboard. No tiers, no add-ons.</p>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <b style="font-family:'Fraunces',serif;font-size:21px">CafeLoop Pro</b>
+      <span class="badge acc">Everything Included</span>
+    </div>
+    <div class="seg"><button id="seg-m" class="on" onclick="setPeriod('monthly')">Monthly</button><button id="seg-y" onclick="setPeriod('yearly')">Yearly · 2 months free</button></div>
+    <p class="center" style="margin-top:16px"><span id="up-price" style="font-family:'Fraunces',serif;font-size:38px;font-weight:900">₹1,499</span> <span class="sub" id="up-per">/ month</span></p>
+    <div class="qrbox mt">
+      <p class="sub" style="margin-bottom:10px">Pay by the QR below (PhonePe / any UPI app):</p>
+      <img src="/payment-qr.png" alt="Payment QR">
+      <p class="small mt">After you pay, your account is activated by the CafeLoop team — this screen unlocks <b>by itself</b>, no button to press. Keep it open, or come back in a little while.</p>
+    </div>
+    <div id="up-wait" class="banner ok center">⏳ Waiting for activation… this page checks by itself.</div>
+    <button class="btn btn-ghost btn-block mt" onclick="doLogout()">Log out</button>
+  </div>
+</section>
+
+<!-- ================= APP ================= -->
+<section id="app-view" class="hidden">
+  <div class="topbar">
+    <div><div class="small">Welcome back 👋</div><div class="cafe" id="tb-cafe">My Cafe</div></div>
+    <span class="pill-live"><span class="dot"></span> LIVE</span>
+  </div>
+
+  <!-- HOME -->
+  <div id="tab-home">
+    <div id="home-newalert"></div>
+    <div class="stats">
+      <div class="stat" style="animation-delay:.02s"><div class="ic">🧾</div><b data-count id="st-orders">0</b><span>Orders today</span></div>
+      <div class="stat" style="animation-delay:.08s"><div class="ic">💰</div><b data-count id="st-revenue">₹0</b><span>Collected today (counter)</span></div>
+      <div class="stat" style="animation-delay:.14s"><div class="ic">👥</div><b data-count id="st-customers">0</b><span>Total customers</span></div>
+      <div class="stat" style="animation-delay:.2s"><div class="ic">🔁</div><b data-count id="st-repeat">0%</b><span>Repeat customers</span></div>
+      <div class="stat" style="animation-delay:.26s"><div class="ic">🎁</div><b data-count id="st-rewards">0</b><span>Free drinks waiting</span></div>
+      <div class="stat" style="animation-delay:.32s"><div class="ic">💌</div><b data-count id="st-comeback">0</b><span>To win back (Come Back)</span></div>
+    </div>
+    <div class="card">
+      <b style="font-family:'Fraunces',serif;font-size:18px">⭐ Top items this week</b>
+      <div id="top-items" class="mt"><p class="small">No orders yet this week.</p></div>
+    </div>
+    <div class="card">
+      <b style="font-family:'Fraunces',serif;font-size:18px">📲 Your table QR link</b>
+      <p class="small mt">Print this link as a QR and keep one on every table. Customers order from it — you just watch the Orders tab.</p>
+      <p class="mt" style="word-break:break-all"><a id="home-link" href="#" target="_blank" style="color:#D35400;font-weight:700"></a></p>
+      <button class="btn btn-ghost btn-sm mt" onclick="copyLink()">Copy Link</button>
+    </div>
+  </div>
+
+  <!-- ORDERS -->
+  <div id="tab-orders" class="hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
+      <h2 style="font-family:'Fraunces',serif;font-size:25px;font-weight:900">Live Orders</h2>
+      <button class="btn btn-ghost btn-sm" id="sound-btn" onclick="toggleSound()">🔇 Sound off</button>
+    </div>
+    <p class="sub">New orders land here by themselves — accept, pick a time, and your customer watches it live on their phone.</p>
+    <div id="orders-box"></div>
+  </div>
+
+  <!-- MENU -->
+  <div id="tab-menu" class="hidden">
+    <h2 style="font-family:'Fraunces',serif;font-size:25px;font-weight:900;margin-top:16px">Your Menu</h2>
+    <p class="sub">This is exactly what customers see on the ordering page.</p>
+    <div id="menu-box"></div>
+    <div class="card">
+      <b style="font-family:'Fraunces',serif;font-size:17px">➕ Add an item</b>
+      <div class="field"><label>Item name</label><input id="mi-name" placeholder="e.g. Cold Coffee"><div class="err" id="me-name"></div></div>
+      <div class="field"><label>Price (₹)</label><input id="mi-price" type="number" min="1" placeholder="e.g. 160"><div class="err" id="me-price"></div></div>
+      <div class="field"><label>Emoji</label><input id="mi-emoji" maxlength="8" placeholder="☕"></div>
+      <div class="field"><label>Category</label><select id="mi-cat"></select><div class="err" id="me-category_id"></div></div>
+      <button class="btn btn-grad btn-block mt" onclick="addMenuItem()">Add Item →</button>
+    </div>
+    <div class="card">
+      <b style="font-family:'Fraunces',serif;font-size:17px">🗂️ Add a category</b>
+      <div class="field"><label>Category name</label><input id="mc-name" placeholder="e.g. Shakes"><div class="err" id="me-catname"></div></div>
+      <button class="btn btn-ghost btn-block mt" onclick="addCategory()">Add Category →</button>
+    </div>
+  </div>
+
+  <!-- CUSTOMERS -->
+  <div id="tab-customers" class="hidden">
+    <h2 style="font-family:'Fraunces',serif;font-size:25px;font-weight:900;margin-top:16px">Customers</h2>
+    <p class="sub">Everyone who ever ordered — stamps and rewards run by themselves.</p>
+    <div id="customers-box"></div>
+  </div>
+
+  <!-- COME BACK -->
+  <div id="tab-comeback" class="hidden">
+    <h2 style="font-family:'Fraunces',serif;font-size:25px;font-weight:900;margin-top:16px">Come Back 💌</h2>
+    <p class="sub">Regulars who haven't visited in 14+ days. One tap sends them a WhatsApp offer with their favourite item.</p>
+    <div id="comeback-box"></div>
+  </div>
+
+  <!-- MORE -->
+  <div id="tab-more" class="hidden">
+    <h2 style="font-family:'Fraunces',serif;font-size:25px;font-weight:900;margin-top:16px">More</h2>
+    <div class="card">
+      <b style="font-family:'Fraunces',serif;font-size:17px">🎁 Redeem a reward code</b>
+      <p class="small mt">A customer shows you a code like CL-XXXXXX — enter it here when you give the free drink.</p>
+      <div class="field"><label>Reward code</label><input id="rd-code" placeholder="CL-XXXXXX" style="text-transform:uppercase"><div class="err" id="rd-err"></div></div>
+      <div id="rd-ok" class="banner ok hidden"></div>
+      <button class="btn btn-grad btn-block mt" onclick="redeemReward()">Redeem →</button>
+    </div>
+    <div class="card">
+      <b style="font-family:'Fraunces',serif;font-size:17px">💳 Your plan</b>
+      <div id="plan-box" class="mt"><p class="small">Loading…</p></div>
+    </div>
+    <div class="card">
+      <b style="font-family:'Fraunces',serif;font-size:17px">📲 Table QR link</b>
+      <p class="mt" style="word-break:break-all"><a id="more-link" href="#" target="_blank" style="color:#D35400;font-weight:700"></a></p>
+      <div style="display:flex;gap:9px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="copyLink()">Copy Link</button>
+        <button class="btn btn-ghost btn-sm" onclick="resetLink()">New Link (old cards stop working)</button>
+      </div>
+    </div>
+    <div class="card">
+      <b style="font-family:'Fraunces',serif;font-size:17px">🏠 Cafe details</b>
+      <div id="more-details" class="mt"><p class="small">Loading…</p></div>
+      <button class="btn btn-ghost btn-block mt" onclick="openDetailsEdit()">Edit Details</button>
+    </div>
+    <button class="btn btn-ghost btn-block" style="margin-top:14px" onclick="doLogout()">Log Out</button>
+    <p class="center small mt">CafeLoop · Made for cafe owners ☕</p>
+  </div>
+</section>
+</div>
+
+<nav class="navbar hidden" id="navbar"><div class="in">
+  <button data-tab="home" class="on" onclick="showTab('home')"><span class="ic">🏠</span>Home</button>
+  <button data-tab="orders" onclick="showTab('orders')"><span class="ic">🧾</span>Orders<span class="nbadge hidden" id="nav-new">0</span></button>
+  <button data-tab="menu" onclick="showTab('menu')"><span class="ic">🍽️</span>Menu</button>
+  <button data-tab="customers" onclick="showTab('customers')"><span class="ic">👥</span>People</button>
+  <button data-tab="comeback" onclick="showTab('comeback')"><span class="ic">💌</span>Come Back</button>
+  <button data-tab="more" onclick="showTab('more')"><span class="ic">⋯</span>More</button>
+</div></nav>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let ME = null, PLAN = null, PERIOD = "monthly", TAB = "home";
+let ordersTimer = null, dashTimer = null, knownNew = new Set(), firstOrderLoad = true;
+let SOUND = false, AC = null, PREP = {}; // PREP[orderId] = chosen minutes
+
+async function api(path, opts = {}) {
+  const headers = Object.assign({"Content-Type": "application/json"}, opts.headers || {});
+  const r = await fetch(path, Object.assign({}, opts, {headers, credentials: "same-origin"}));
+  let data = null;
+  try { data = await r.json(); } catch(e) {}
+  if (!r.ok) {
+    const e = new Error((data && data.detail) || ("HTTP " + r.status));
+    e.status = r.status; e.data = data; throw e;
+  }
+  return data;
+}
+function fieldErrors(map, prefix) {
+  document.querySelectorAll('[id^="' + prefix + '"]').forEach(el => el.textContent = "");
+  if (!map) return;
+  Object.entries(map).forEach(([k, v]) => { const el = $(prefix + k); if (el) el.textContent = v; });
+}
+function showView(name) {
+  ["login","signup","otp","forgot","details","upgrade","app"].forEach(v => $(v + "-view").classList.add("hidden"));
+  $(name + "-view").classList.remove("hidden");
+  $("navbar").classList.toggle("hidden", name !== "app");
+  window.scrollTo(0, 0);
+}
+function friendly(e) {
+  if (!e) return "Something went wrong. Please try again.";
+  if (e.status === 402) return e.data && e.data.detail === "subscription inactive"
+    ? "Your subscription is inactive or expired. Please activate to continue."
+    : "Your subscription is not active yet. Please complete payment.";
+  return e.message || "Something went wrong. Please try again.";
+}
+
+/* ---------------- auth ---------------- */
+async function routeAfterAuth() {
+  try {
+    ME = await api("/api/me");
+    $("otp-email").textContent = ME.email || "";
+    if (ME.otp_pending) { $("otp-view").dataset.forgot = ""; showView("otp"); return; }
+    if (!ME.details_completed) { prefillDetails(); showView("details"); return; }
+    PLAN = await api("/api/plan");
+    if (!PLAN.subscription_active) { showView("upgrade"); startPlanPoll(); return; }
+    enterApp();
+  } catch(e) { showView("login"); }
+}
+async function boot() {
+  try { const cfg = await (await fetch("/api/auth/config")).json(); if (cfg.google_enabled) $("google-box").classList.remove("hidden"); } catch(e) {}
+  const qs = new URLSearchParams(location.search);
+  if (qs.get("auth_error")) { const b = $("auth-error"); b.textContent = qs.get("auth_error"); b.classList.remove("hidden"); }
+  try { ME = await api("/api/me"); routeAfterAuth(); }
+  catch(e) { showView("login"); }
+}
+async function doLogin() {
+  $("e-li").textContent = "";
+  try {
+    await api("/api/login", {method: "POST", body: JSON.stringify({email: $("li-email").value.trim(), password: $("li-pass").value})});
+    routeAfterAuth();
+  } catch(e) { $("e-li").textContent = e.status === 422 ? "Enter a valid email and password." : (e.status === 401 ? "Wrong email or password." : friendly(e)); }
+}
+async function doSignup() {
+  fieldErrors(null, "fe-"); $("su-error").classList.add("hidden");
+  try {
+    const r = await api("/api/signup", {method: "POST", body: JSON.stringify({
+      owner_name: $("su-owner").value.trim(), cafe_name: $("su-cafe").value.trim(),
+      email: $("su-email").value.trim(), mobile: $("su-mobile").value.trim(), password: $("su-pass").value})});
+    $("otp-email").textContent = r.email; showView("otp");
+  } catch(e) {
+    if (e.data && e.data.fields) fieldErrors(e.data.fields, "fe-");
+    else { const b = $("su-error"); b.textContent = friendly(e); b.classList.remove("hidden"); }
+  }
+}
+async function doVerifyOtp() {
+  $("otp-err").textContent = "";
+  try {
+    await api("/api/auth/otp/verify", {method: "POST", body: JSON.stringify({code: $("otp-code").value.trim()})});
+    routeAfterAuth();
+  } catch(e) { $("otp-err").textContent = (e.data && e.data.detail) || "That code didn't work — check it and try again."; }
+}
+async function doResendOtp() {
+  try { await api("/api/auth/otp/send", {method: "POST", body: "{}"}); $("otp-err").textContent = "A fresh code is on its way ✉️"; }
+  catch(e) { $("otp-err").textContent = friendly(e); }
+}
+async function doForgot() {
+  try {
+    await api("/api/auth/forgot", {method: "POST", body: JSON.stringify({email: $("fp-email").value.trim()})});
+    $("forgot-step1").classList.add("hidden"); $("forgot-step2").classList.remove("hidden");
+  } catch(e) { alert(friendly(e)); }
+}
+async function doReset() {
+  $("fp-err").textContent = "";
+  try {
+    await api("/api/auth/reset", {method: "POST", body: JSON.stringify({email: $("fp-email").value.trim(), code: $("fp-code").value.trim(), new_password: $("fp-new").value})});
+    showView("login");
+  } catch(e) { $("fp-err").textContent = e.status === 422 ? "Check the code and use a 6+ character password." : "That code didn't work — request a fresh one."; }
+}
+async function doLogout() { try { await api("/api/logout", {method: "POST", body: "{}"}); } catch(e) {} location.href = "/"; }
+
+/* ---------------- details ---------------- */
+function prefillDetails() {
+  if (!ME) return;
+  $("d-cafe").value = ME.cafe_name || ""; $("d-owner").value = ME.owner_name || "";
+  $("d-addr").value = ME.cafe_address || ""; $("d-city").value = ME.cafe_city || "";
+  $("d-phone").value = ME.cafe_phone || ""; $("d-mobile").value = ME.mobile || ""; $("d-wa").value = ME.whatsapp || "";
+}
+async function doSaveDetails() {
+  fieldErrors(null, "de-"); $("d-error").classList.add("hidden");
+  try {
+    await api("/api/details", {method: "PUT", body: JSON.stringify({
+      cafe_name: $("d-cafe").value.trim(), cafe_address: $("d-addr").value.trim(), cafe_city: $("d-city").value.trim(),
+      cafe_phone: $("d-phone").value.trim(), owner_name: $("d-owner").value.trim(), mobile: $("d-mobile").value.trim(),
+      whatsapp: $("d-wa").value.trim()})});
+    routeAfterAuth();
+  } catch(e) {
+    if (e.data && e.data.fields) fieldErrors(e.data.fields, "de-");
+    else { const b = $("d-error"); b.textContent = friendly(e); b.classList.remove("hidden"); }
+  }
+}
+function openDetailsEdit() { prefillDetails(); stopTimers(); showView("details"); }
+
+/* ---------------- payment ---------------- */
+function setPeriod(p) {
+  PERIOD = p;
+  $("seg-m").classList.toggle("on", p === "monthly"); $("seg-y").classList.toggle("on", p === "yearly");
+  $("up-price").textContent = p === "monthly" ? "₹1,499" : "₹14,990";
+  $("up-per").textContent = p === "monthly" ? "/ month" : "/ year";
+  api("/api/plan/switch", {method: "POST", body: JSON.stringify({period: p})}).catch(() => {});
+}
+function startPlanPoll() {
+  const iv = setInterval(async () => {
+    try {
+      const p = await api("/api/plan");
+      if (p.subscription_active) {
+        clearInterval(iv);
+        $("up-wait").innerHTML = "🎉";
+        document.querySelector("#upgrade-view h1").innerHTML = "You're<br><em>live!</em>";
+        setTimeout(enterApp, 1200);
+      }
+    } catch(e) {}
+  }, 3000);
+}
+
+/* ---------------- app ---------------- */
+function enterApp() {
+  stopTimers(); showView("app"); showTab("home");
+  refreshAll();
+  dashTimer = setInterval(() => { if (TAB === "home") loadDashboard(); if (TAB === "orders") loadOrders(false); }, 2000);
+}
+function stopTimers() { if (dashTimer) clearInterval(dashTimer); dashTimer = null; }
+function showTab(t) {
+  TAB = t;
+  ["home","orders","menu","customers","comeback","more"].forEach(x => $("tab-" + x).classList.toggle("hidden", x !== t));
+  document.querySelectorAll(".navbar button[data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+  window.scrollTo(0, 0);
+  if (t === "home") loadDashboard();
+  if (t === "orders") loadOrders(false);
+  if (t === "menu") loadMenu();
+  if (t === "customers") loadCustomers();
+  if (t === "comeback") loadComeback();
+  if (t === "more") loadMore();
+}
+function refreshAll() { loadDashboard(); loadLink(); }
+function countUp(el, target, fmt) {
+  const t0 = performance.now(), dur = 900;
+  function frame(t) {
+    const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = fmt(Math.round(target * e));
+    if (k < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+async function loadDashboard() {
+  try {
+    const d = await api("/api/dashboard");
+    $("tb-cafe").textContent = d.cafe_name || "My Cafe";
+    countUp($("st-orders"), d.orders_today, v => v);
+    countUp($("st-revenue"), d.revenue_today, v => "₹" + v.toLocaleString("en-IN"));
+    countUp($("st-customers"), d.total_customers, v => v);
+    countUp($("st-repeat"), d.repeat_pct, v => v + "%");
+    countUp($("st-rewards"), d.rewards_active, v => v);
+    countUp($("st-comeback"), d.comeback_count, v => v);
+    $("top-items").innerHTML = d.top_items.length
+      ? d.top_items.map((t, i) => `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1.5px dashed var(--line)"><span><b>${i+1}.</b> ${esc(t.emoji||"")} ${esc(t.name)}</span><b>${t.qty} sold</b></div>`).join("")
+      : '<p class="small">No orders yet this week.</p>';
+    const alertBox = $("home-newalert");
+    if (d.orders_new > 0) {
+      alertBox.innerHTML = `<button class="alert-new" onclick="showTab('orders')"><span><b>🔔 ${d.orders_new} new order${d.orders_new>1?"s":""} waiting!</b><small>Tap to accept — your customers are watching their screens.</small></span><span class="cnt">${d.orders_new}</span></button>`;
+    } else alertBox.innerHTML = "";
+    const nb = $("nav-new");
+    nb.textContent = d.orders_new; nb.classList.toggle("hidden", d.orders_new === 0);
+  } catch(e) { if (e.status === 402) routeAfterAuth(); }
+}
+
+/* ---------------- orders ---------------- */
+function toggleSound() {
+  SOUND = !SOUND;
+  $("sound-btn").textContent = SOUND ? "🔊 Sound on" : "🔇 Sound off";
+  if (SOUND) { ensureAudio(); beep(); }
+}
+function ensureAudio() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (AC && AC.state === "suspended") AC.resume(); }
+function beep() {
+  if (!SOUND || !AC) return;
+  const t = AC.currentTime;
+  [880, 1174].forEach((f, i) => {
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.frequency.value = f; o.type = "sine";
+    g.gain.setValueAtTime(0.0001, t + i * 0.16);
+    g.gain.exponentialRampToValueAtTime(0.22, t + i * 0.16 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.16 + 0.15);
+    o.connect(g); g.connect(AC.destination); o.start(t + i * 0.16); o.stop(t + i * 0.16 + 0.16);
+  });
+}
+function etaText(o) {
+  if (o.minutes_left === null || o.minutes_left === undefined) return "";
+  if (o.status === "SERVED" || o.status === "COMPLETED") return "";
+  return o.minutes_left > 0 ? `⏱ ready in ~${o.minutes_left} min` : "⏱ ready any moment…";
+}
+function orderCard(o) {
+  const badge = {NEW:'<span class="badge new">● New</span>', ACCEPTED:'<span class="badge acc">Accepted</span>', PREPARING:'<span class="badge prep">Preparing</span>', SERVED:'<span class="badge served">Served ✓</span>', COMPLETED:'<span class="badge done">Completed</span>'}[o.status];
+  const items = o.items.map(i => `${esc(i.name)} × ${i.qty}`).join("<br>");
+  const tbl = /^\d+$/.test(o.table || "") ? "Table " + o.table : (o.table || "Counter");
+  let actions = "";
+  if (o.status === "NEW") {
+    const chosen = PREP[o.id] || 15;
+    actions = `<div class="chips">${[10,15,20,30].map(m => `<button class="chip ${m===chosen?"on":""}" onclick="pickPrep(${o.id},${m})">${m} min</button>`).join("")}</div>
+      <div class="order-actions"><button class="btn btn-grad" onclick="setStatus(${o.id},'ACCEPTED')">✓ Accept · ${chosen} min</button></div>`;
+  } else if (o.status === "ACCEPTED") {
+    actions = `<div class="order-actions"><button class="btn btn-grad" onclick="setStatus(${o.id},'PREPARING')">🍳 Start Preparing</button><button class="btn btn-ghost" style="flex:0 0 auto" onclick="delayOrder(${o.id},'${o.status}')">+5 min</button></div>`;
+  } else if (o.status === "PREPARING") {
+    actions = `<div class="order-actions"><button class="btn btn-green" onclick="setStatus(${o.id},'SERVED')">🎉 Mark Served</button><button class="btn btn-ghost" style="flex:0 0 auto" onclick="delayOrder(${o.id},'${o.status}')">+5 min</button></div>`;
+  } else if (o.status === "SERVED" || o.status === "COMPLETED") {
+    actions = o.paid
+      ? `<div class="order-actions"><span class="badge paid" style="font-size:12.5px;padding:9px 14px">💰 Paid at counter ✓</span></div>`
+      : `<div class="order-actions"><button class="btn btn-ink" onclick="markPaid(${o.id})">💵 Mark Paid · ₹${o.total}</button></div>`;
+  }
+  return `<div class="order-card ${o.status==="NEW"?"is-new":""}">
+    <div class="order-head"><div><span class="tbl">${esc(tbl)}</span> <span class="small">#${o.id}</span><br><span class="order-meta">👤 ${esc(o.customer.name)} · 📱 ${esc(o.customer.phone)}</span></div>
+    <div style="text-align:right">${badge}<div class="order-total" style="margin-top:5px">₹${o.total}</div></div></div>
+    <div class="order-items">${items}</div>
+    <div class="order-meta"><span class="eta">${etaText(o)}</span> ${o.paid ? '<span class="badge paid">Paid</span>' : '<span class="badge unpaid">Unpaid</span>'}</div>
+    ${actions}</div>`;
+}
+async function loadOrders(manual) {
+  try {
+    const d = await api("/api/orders");
+    const fresh = d.orders.filter(o => o.status === "NEW" && !knownNew.has(o.id));
+    if (!firstOrderLoad && fresh.length && TAB === "orders") beep();
+    d.orders.forEach(o => { if (o.status === "NEW") knownNew.add(o.id); });
+    firstOrderLoad = false;
+    const nb = $("nav-new"); const nNew = d.orders.filter(o => o.status === "NEW").length;
+    nb.textContent = nNew; nb.classList.toggle("hidden", nNew === 0);
+    $("orders-box").innerHTML = d.orders.length ? d.orders.map(orderCard).join("")
+      : '<div class="card center"><div style="font-size:44px">🧾</div><p class="sub">No orders yet. Share your table QR link — orders will land here live.</p></div>';
+  } catch(e) { if (e.status === 402) routeAfterAuth(); }
+}
+function pickPrep(id, m) { PREP[id] = m; loadOrders(false); }
+async function setStatus(id, status) {
+  ensureAudio();
+  const body = {status};
+  if (status === "ACCEPTED") body.prep_minutes = PREP[id] || 15;
+  try { await api(`/api/orders/${id}/status`, {method: "POST", body: JSON.stringify(body)}); loadOrders(false); loadDashboard(); }
+  catch(e) { alert(friendly(e)); }
+}
+async function delayOrder(id, status) {
+  try { await api(`/api/orders/${id}/status`, {method: "POST", body: JSON.stringify({status: status, add_minutes: 5})}); loadOrders(false); }
+  catch(e) { alert(friendly(e)); }
+}
+async function markPaid(id) {
+  try { await api(`/api/orders/${id}/paid`, {method: "POST", body: JSON.stringify({paid: true})}); loadOrders(false); loadDashboard(); }
+  catch(e) { alert(friendly(e)); }
+}
+
+/* ---------------- menu ---------------- */
+let MENU = null;
+async function loadMenu() {
+  try {
+    MENU = await api("/api/menu");
+    $("mi-cat").innerHTML = MENU.categories.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
+    $("menu-box").innerHTML = MENU.categories.map(c => {
+      const items = MENU.items.filter(i => i.category_id === c.id);
+      return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-family:'Fraunces',serif;font-size:17px">${esc(c.name)}</b><button class="link" style="color:#C0392B" onclick="delCategory(${c.id})">Delete</button></div>
+      ${items.length ? items.map(i => `<div class="mitem"><span class="em">${esc(i.emoji||"🍽️")}</span><div style="flex:1"><b>${esc(i.name)}</b><br><span class="small">₹${i.price}</span></div>
+        <label class="switch"><input type="checkbox" ${i.available?"checked":""} onchange="toggleItem(${i.id},this.checked)"><span class="tr"></span></label>
+        <button class="link" style="color:#C0392B" onclick="delItem(${i.id})">✕</button></div>`).join("") : '<p class="small mt">No items yet.</p>'}</div>`;
+    }).join("") || '<div class="card"><p class="small">No categories yet — add one below.</p></div>';
+  } catch(e) { if (e.status === 402) routeAfterAuth(); }
+}
+async function addMenuItem() {
+  fieldErrors(null, "me-");
+  try {
+    await api("/api/menu/items", {method: "POST", body: JSON.stringify({name: $("mi-name").value.trim(), price: parseInt($("mi-price").value || "0", 10), emoji: $("mi-emoji").value.trim() || "☕", category_id: parseInt($("mi-cat").value || "0", 10), available: true})});
+    $("mi-name").value = ""; $("mi-price").value = ""; loadMenu();
+  } catch(e) { if (e.data && e.data.fields) fieldErrors(e.data.fields, "me-"); else alert(friendly(e)); }
+}
+async function toggleItem(id, on) { try { await api(`/api/menu/items/${id}`, {method: "PUT", body: JSON.stringify({available: on})}); } catch(e) { alert(friendly(e)); loadMenu(); } }
+async function delItem(id) { if (!confirm("Remove this item from the menu?")) return; try { await api(`/api/menu/items/${id}`, {method: "DELETE"}); loadMenu(); } catch(e) { alert(friendly(e)); } }
+async function addCategory() {
+  $("me-catname").textContent = "";
+  try { await api("/api/menu/categories", {method: "POST", body: JSON.stringify({name: $("mc-name").value.trim()})}); $("mc-name").value = ""; loadMenu(); }
+  catch(e) { $("me-catname").textContent = e.status === 422 ? "Enter a category name." : friendly(e); }
+}
+async function delCategory(id) { if (!confirm("Delete this category? Its items stay, uncategorised.")) return; try { await api(`/api/menu/categories/${id}`, {method: "DELETE"}); loadMenu(); } catch(e) { alert(friendly(e)); } }
+
+/* ---------------- customers & comeback ---------------- */
+function stampDots(n) { return `<span class="dots">${[1,2,3,4,5].map(i => `<i class="${i<=n?"f":""}"></i>`).join("")}</span>`; }
+async function loadCustomers() {
+  try {
+    const d = await api("/api/customers");
+    $("customers-box").innerHTML = d.customers.length ? d.customers.map(c => `<div class="card"><div class="cust"><span class="avatar">${esc((c.name||"?").slice(0,1).toUpperCase())}</span>
+      <div style="flex:1"><b>${esc(c.name)}</b> ${c.active_reward ? `<span class="badge new">🎁 ${esc(c.active_reward.code)}</span>` : ""}<br>
+      <span class="small">📱 ${esc(c.phone)} · ${c.visits} visit${c.visits!==1?"s":""} · last ${esc((c.last_visit||"—").slice(0,10))}</span><br>
+      <span class="small">Stamps ${stampDots(c.stamps)} · ♥ ${esc(c.favourite||"—")}</span></div></div></div>`).join("")
+      : '<div class="card center"><div style="font-size:44px">👥</div><p class="sub">No customers yet — they appear automatically when someone orders.</p></div>';
+  } catch(e) { if (e.status === 402) routeAfterAuth(); }
+}
+async function loadComeback() {
+  try {
+    const d = await api("/api/comeback");
+    $("comeback-box").innerHTML = d.customers.length ? d.customers.map(c => `<div class="card"><div class="cust"><span class="avatar">💌</span>
+      <div style="flex:1"><b>${esc(c.name)}</b><br><span class="small">📱 ${esc(c.phone)} · ${c.visits} visits · gone ${c.days_absent} days · ♥ ${esc(c.favourite||"—")}</span>
+      <div class="mt"><a class="wa-btn" target="_blank" href=https://wa.me/91${esc(c.phone)}?text=${encodeURIComponent(c.message)}">💬 WhatsApp · 20% OFF offer</a></div></div></div></div>`).join("")
+      : '<div class="card center"><div style="font-size:44px">💌</div><p class="sub">Nobody to win back right now — your regulars are all recent. 🎉</p></div>';
+  } catch(e) { if (e.status === 402) routeAfterAuth(); }
+}
+
+/* ---------------- more ---------------- */
+async function loadLink() {
+  try { const l = await api("/api/cafe/link"); $("home-link").textContent = l.url; $("home-link").href = l.url; $("more-link").textContent = l.url; $("more-link").href = l.url; } catch(e) {}
+}
+function copyLink() { const t = $("more-link").textContent || $("home-link").textContent; if (t) navigator.clipboard.writeText(t).then(() => alert("Link copied! Print it as a QR for your tables.")); }
+async function resetLink() {
+  if (!confirm("Create a NEW link? QR codes printed with the old link will stop working.")) return;
+  try { await api("/api/cafe/link/reset", {method: "POST", body: "{}"}); loadLink(); alert("New link is live ✅"); } catch(e) { alert(friendly(e)); }
+}
+function burst() {
+  const colors = ["#FFB800", "#FF7A00", "#E63329", "#FFD54D"];
+  for (let i = 0; i < 22; i++) {
+    const d = document.createElement("div");
+    const sz = 5 + Math.random() * 6;
+    d.style.cssText = `position:fixed;left:50%;top:30%;width:${sz}px;height:${sz}px;background:${colors[i % colors.length]};border-radius:50%;z-index:999;pointer-events:none`;
+    document.body.appendChild(d);
+    const ang = Math.random() * Math.PI * 2, dist = 70 + Math.random() * 150;
+    d.animate([{transform: "translate(0,0)", opacity: 1},
+      {transform: `translate(${Math.cos(ang) * dist}px, ${Math.sin(ang) * dist + 150}px)`, opacity: 0}],
+      {duration: 800 + Math.random() * 400, easing: "cubic-bezier(.17,.67,.35,1)"}).onfinish = () => d.remove();
+  }
+}
+async function redeemReward() {
+  $("rd-err").textContent = ""; $("rd-ok").classList.add("hidden");
+  try {
+    const r = await api("/api/rewards/redeem", {method: "POST", body: JSON.stringify({code: $("rd-code").value.trim().toUpperCase()})});
+    const ok = $("rd-ok"); ok.textContent = `✅ ${r.reward.code} redeemed — free drink given to ${r.customer.name}.`; ok.classList.remove("hidden"); burst();
+    $("rd-code").value = ""; loadDashboard();
+  } catch(e) { $("rd-err").textContent = friendly(e); }
+}
+async function loadMore() {
+  loadLink();
+  try {
+    const p = await api("/api/plan");
+    const plan = p.plans[0];
+    $("plan-box").innerHTML = `<b>${esc(plan.name)}</b> — ${p.subscription_active ? "✅ Active" : "⏸ Inactive"}<br><span class="small">Your period: ${esc(p.period || "—")} · Monthly ₹${plan.monthly} · Yearly ₹${plan.yearly}</span>${p.ends_on ? `<br><span class="small">Active till: ${esc(p.ends_on)}</span>` : ""}`;
+  } catch(e) {}
+  try {
+    ME = await api("/api/me");
+    $("more-details").innerHTML = `<b>${esc(ME.cafe_name||"")}</b><br><span class="small">${esc(ME.cafe_address||"")}, ${esc(ME.cafe_city||"")} · 📱 ${esc(ME.cafe_phone||"")}<br>Owner: ${esc(ME.owner_name||"")} · ${esc(ME.email||"")}</span>`;
+  } catch(e) {}
+}
+
+document.addEventListener("pointerdown", ensureAudio, {once: true});
+boot();
+</script>
+</body>
+</html>

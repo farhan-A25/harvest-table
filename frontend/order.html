@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>__CAFE_NAME__ — Order & Stamps</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FFF9F1; --cream2:#FBEEDC; --paper:#FFFDF9; --ink:#3B2416; --ink2:#6B4A2B;
+  --muted:#9A7B5F; --line:#F0DFC4; --coffee:#6F4E37; --caramel:#B7791F; --terra:#E63329;
+  --grad:linear-gradient(135deg,#FFB800 0%,#FF7A00 52%,#E63329 100%);
+  --grad-soft:linear-gradient(135deg,#FDE8D7,#FBEEDC);
+  --shadow:0 14px 34px rgba(146,96,32,.13); --shadow-lg:0 24px 50px rgba(146,96,32,.18);
+  --r:22px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--cream);color:var(--ink);min-height:100dvh;overflow-x:hidden}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none!important}
+
+/* ambient background wash + grain of warmth */
+.bgwash{position:fixed;inset:0;z-index:-2;background:
+  radial-gradient(700px 420px at 110% -60px,rgba(230,51,41,.16),transparent 60%),
+  radial-gradient(620px 480px at -120px 30%,rgba(183,121,31,.14),transparent 60%),
+  linear-gradient(180deg,#FFF9F1,#FDF3E3)}
+/* floating coffee beans */
+.bean{position:fixed;z-index:-1;width:54px;height:38px;border-radius:50%;background:radial-gradient(ellipse at 35% 35%,#A9744F,#6F4E37 70%);opacity:.14;pointer-events:none;animation:floaty 9s ease-in-out infinite}
+.bean::after{content:"";position:absolute;left:50%;top:6%;bottom:6%;width:3px;margin-left:-1.5px;border-radius:3px;background:rgba(59,36,22,.5);transform:rotate(12deg)}
+.bean.b1{top:12%;left:-14px;transform:rotate(-24deg)}
+.bean.b2{top:38%;right:-18px;width:70px;height:48px;animation-delay:-3s;transform:rotate(30deg)}
+.bean.b3{top:66%;left:-20px;width:44px;height:32px;animation-delay:-6s;transform:rotate(12deg)}
+.bean.b4{top:84%;right:-10px;animation-delay:-1.5s;transform:rotate(-38deg)}
+@keyframes floaty{0%,100%{margin-top:0}50%{margin-top:-16px}}
+
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 120px;position:relative}
+
+/* ---------- hero ---------- */
+.hero{padding:34px 4px 6px;text-align:left;position:relative}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);color:var(--ink2);font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding:7px 13px;border-radius:999px;box-shadow:var(--shadow);animation:fadeDown .7s cubic-bezier(.2,.9,.3,1.2) both}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:#3E9B4F;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.55}}
+h1.display{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(50px,14.5vw,74px);line-height:.98;letter-spacing:-.015em;margin-top:16px;animation:fadeUp .8s .08s cubic-bezier(.2,.9,.3,1.15) both}
+h1.display em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);font-size:15px;line-height:1.55;margin-top:12px;max-width:420px;animation:fadeUp .8s .16s both}
+.hero-cta{display:flex;gap:10px;margin-top:18px;animation:fadeUp .8s .24s both}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:16px;padding:14px 20px;font-size:15px;font-weight:800;transition:transform .15s,box-shadow .2s}
+.btn:active{transform:scale(.96)}
+.btn-grad{background:var(--grad);color:#fff;box-shadow:0 12px 26px rgba(230,51,41,.32)}
+.btn-ghost{background:#fff;color:var(--ink2);border:1.5px solid var(--line)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}
+
+/* loyalty strip */
+.loyal{margin-top:22px;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;display:flex;gap:14px;align-items:center;animation:fadeUp .8s .32s both}
+.loyal .ic{font-size:30px;background:var(--grad-soft);width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;flex:none;animation:wiggle 3.2s ease-in-out infinite}
+@keyframes wiggle{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(5deg) scale(1.05)}}
+.loyal b{font-size:15px}
+.loyal span{display:block;color:var(--muted);font-size:13px;margin-top:2px;line-height:1.45}
+
+/* ---------- marquee ---------- */
+.marquee{margin:26px -16px 0;background:linear-gradient(90deg,#F59E0B,#FF7A00 55%,#E63329);color:#FBEEDC;overflow:hidden;transform:rotate(-1.2deg) scale(1.02);box-shadow:var(--shadow)}
+.marquee .track{display:flex;gap:0;white-space:nowrap;width:max-content;animation:scrollx 26s linear infinite;padding:10px 0;font-family:'Fraunces',serif;font-weight:800;font-size:14px;letter-spacing:.22em}
+.marquee .track span{padding:0 14px}
+@keyframes scrollx{to{transform:translateX(-50%)}}
+
+/* wavy divider */
+.wave{display:block;width:100%;height:26px;margin-top:22px;color:#F3E2C7}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px;gap:5px;margin-top:24px;box-shadow:var(--shadow);position:sticky;top:10px;z-index:30}
+.tabs button{flex:1;border:none;background:none;padding:11px;border-radius:999px;font-size:14.5px;font-weight:800;color:var(--muted);transition:all .25s}
+.tabs button.on{background:var(--grad);color:#fff;box-shadow:0 8px 18px rgba(230,51,41,.30)}
+
+/* ---------- category pills ---------- */
+.pills{display:flex;gap:9px;overflow-x:auto;padding:18px 2px 6px;scrollbar-width:none;position:sticky;top:66px;z-index:25}
+.pills::-webkit-scrollbar{display:none}
+.pill{flex:none;border:1.5px solid var(--line);background:#fff;color:var(--ink2);padding:9px 16px;border-radius:999px;font-size:13.5px;font-weight:700;transition:all .25s;animation:fadeUp .5s both}
+.pill.on{background:var(--grad);color:#fff;border-color:transparent;transform:scale(1.05);box-shadow:var(--shadow)}
+
+/* ---------- menu cards ---------- */
+.cat-title{font-family:'Fraunces',serif;font-size:26px;font-weight:800;margin:26px 2px 12px;display:flex;align-items:center;gap:10px}
+.cat-title::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,var(--line),transparent);border-radius:2px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+@media(max-width:380px){.grid{grid-template-columns:1fr}}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);opacity:0;transform:translateY(26px);transition:transform .35s cubic-bezier(.2,.9,.3,1.2),box-shadow .3s;will-change:transform}
+.card.in{opacity:1;transform:none}
+.card:hover{box-shadow:var(--shadow-lg)}
+.card .tile{height:86px;border-radius:16px;background:linear-gradient(135deg,#FFE3D3,#FDEBC8 55%,#FFF0B8);display:flex;align-items:center;justify-content:center;font-size:44px;position:relative;overflow:hidden}
+.card .tile::after{content:"";position:absolute;inset:0;background:radial-gradient(120px 50px at 20% 0%,rgba(255,255,255,.65),transparent 70%)}
+.card .emoji{display:inline-block;animation:bob 3.6s ease-in-out infinite;filter:drop-shadow(0 8px 10px rgba(111,78,55,.25))}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-6px) rotate(3deg)}}
+.card h3{font-size:15.5px;font-weight:800;margin-top:11px;line-height:1.3}
+.rate{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;color:var(--caramel);background:#FDF3E2;padding:3px 8px;border-radius:999px;margin-top:6px}
+.row{display:flex;align-items:center;justify-content:space-between;margin-top:11px}
+.price{font-family:'Fraunces',serif;font-size:19px;font-weight:800}
+.addbtn{border:none;background:var(--grad);color:#fff;font-weight:800;font-size:13.5px;padding:9px 16px;border-radius:12px;box-shadow:0 8px 16px rgba(230,51,41,.28);transition:transform .15s}
+.addbtn:active{transform:scale(.9)}
+.stepper{display:flex;align-items:center;gap:11px;background:var(--ink);color:#FBEEDC;border-radius:12px;padding:5px 10px}
+.stepper button{background:none;border:none;color:#FBEEDC;font-size:19px;font-weight:800;width:24px;line-height:1}
+.stepper b{font-size:14.5px;min-width:16px;text-align:center}
+
+/* ---------- cart bar / sheets ---------- */
+.cartbar{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;width:min(528px,calc(100% - 24px));background:var(--ink);color:#FBEEDC;border-radius:20px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 22px 44px rgba(59,36,22,.4);z-index:40;border:none;text-align:left;animation:slideBar .45s cubic-bezier(.2,.9,.3,1.25)}
+.cartbar.bump{animation:bump .45s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes slideBar{from{transform:translate(-50%,90px)}to{transform:translate(-50%,0)}}
+@keyframes bump{0%{transform:translateX(-50%) scale(1)}35%{transform:translateX(-50%) scale(1.045) rotate(-.6deg)}100%{transform:translateX(-50%) scale(1)}}
+.cartbar .n{background:var(--grad);color:#fff;border-radius:10px;padding:3px 9px;font-weight:800;font-size:13px}
+.cartbar b{font-size:15.5px}.cartbar small{display:block;color:#D9BE96;font-size:12px;margin-top:1px}
+.cartbar .go{font-weight:800;font-size:14.5px}
+.overlay{position:fixed;inset:0;background:rgba(59,36,22,.45);backdrop-filter:blur(3px);z-index:50;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .25s both}
+@keyframes fadeIn{from{opacity:0}}
+.sheet{background:var(--cream);width:min(560px,100%);max-height:92dvh;overflow-y:auto;border-radius:28px 28px 0 0;padding:22px 18px 30px;animation:sheetUp .45s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes sheetUp{from{transform:translateY(70px);opacity:.4}to{transform:none;opacity:1}}
+.sheet h2{font-family:'Fraunces',serif;font-size:24px;font-weight:800}
+.cline{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1.5px dashed var(--line)}
+.cline .nm{font-weight:700;font-size:14.5px}.cline .pr{color:var(--muted);font-size:13px}
+.field{margin-top:14px}
+.field label{display:block;font-size:12.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--ink2);margin-bottom:7px}
+.field input{width:100%;padding:14px 15px;border:1.5px solid var(--line);border-radius:14px;font-size:15.5px;font-family:inherit;background:#fff;color:var(--ink);outline:none;transition:border-color .2s, box-shadow .2s}
+.field input:focus{border-color:var(--terra);box-shadow:0 0 0 4px rgba(230,51,41,.13)}
+.field .err{color:#C0392B;font-size:12.5px;font-weight:700;margin-top:5px;min-height:15px}
+.tables{display:flex;flex-wrap:wrap;gap:8px}
+.tables button{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-weight:700;font-size:13.5px;color:var(--ink2);transition:all .2s}
+.tables button.on{background:var(--grad);color:#fff;border-color:transparent;transform:scale(1.07);box-shadow:0 8px 16px rgba(230,51,41,.28)}
+.total-row{display:flex;justify-content:space-between;font-family:'Fraunces',serif;font-size:20px;font-weight:800;margin-top:16px}
+.place{width:100%;margin-top:16px;padding:16px;font-size:16px;border-radius:16px}
+.place:disabled{opacity:.6}
+
+/* ---------- success / stamps ---------- */
+.success{text-align:center;padding-top:8px}
+.check-pop{width:84px;height:84px;margin:6px auto 14px;border-radius:50%;background:linear-gradient(135deg,#4CAF6D,#2E7D46);color:#fff;font-size:42px;display:flex;align-items:center;justify-content:center;box-shadow:0 16px 32px rgba(46,125,70,.35);animation:popIn .55s cubic-bezier(.2,.9,.3,1.5) both}
+@keyframes popIn{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.stampcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;margin-top:18px;text-align:left}
+.stampcard h4{font-family:'Fraunces',serif;font-size:17px}
+.stamps{display:flex;gap:9px;margin-top:13px}
+.stamp{flex:1;aspect-ratio:1;border-radius:50%;border:2.5px dashed #E4CBA3;display:flex;align-items:center;justify-content:center;font-size:19px;color:#D9BE96;background:#FFF9F1;transition:all .3s}
+.stamp.full{border-style:solid;border-color:transparent;background:var(--grad);color:#fff;animation:stampPop .55s cubic-bezier(.2,.9,.3,1.6) both;box-shadow:0 8px 16px rgba(230,51,41,.3)}
+@keyframes stampPop{0%{transform:scale(.3) rotate(-30deg);opacity:0}60%{transform:scale(1.25) rotate(6deg)}100%{transform:scale(1) rotate(0)}}
+.stamp.free{font-size:10px;font-weight:800;letter-spacing:.03em}
+.rewardbox{margin-top:15px;background:linear-gradient(135deg,#3B2416,#6F4E37);color:#FBEEDC;border-radius:18px;padding:16px;animation:fadeUp .6s both;position:relative;overflow:hidden}
+.rewardbox::after{content:"🎁";position:absolute;right:10px;top:6px;font-size:44px;opacity:.25;animation:bob 3s infinite}
+.rewardbox .code{font-family:'Fraunces',serif;font-size:27px;font-weight:900;letter-spacing:.1em;color:#FFD98A}
+.rewardbox small{color:#D9BE96}
+.foot-note{text-align:center;color:var(--muted);font-size:12.5px;margin-top:26px;line-height:1.6}
+.foot-note b{color:var(--ink2)}
+
+/* live tracking steps */
+#track-banner{margin-top:20px}
+#track-banner:empty{margin-top:0}
+.steps{margin-top:13px;display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:11px;align-items:flex-start;position:relative;padding:0 0 15px}
+.step::before{content:"";position:absolute;left:12px;top:26px;bottom:0;width:2.5px;background:var(--line);border-radius:2px}
+.step:last-child::before{display:none}
+.step .sdot{width:25px;height:25px;flex:none;border-radius:50%;background:#fff;border:2.5px solid var(--line);color:var(--muted);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;z-index:1;transition:all .3s}
+.step .slab{font-size:14px;font-weight:600;color:var(--muted);padding-top:3px}
+.step.done .sdot{background:linear-gradient(135deg,#4CAF6D,#2E7D46);border-color:transparent;color:#fff}
+.step.done .slab{color:var(--ink2)}
+.step.done::before{background:#4CAF6D}
+.step.now .sdot{border-color:var(--terra);color:var(--terra);animation:pulse 1.4s infinite}
+.step.now .slab{color:var(--ink);font-weight:800}
+</style>
+</head>
+<body>
+<div class="bgwash"></div>
+<div class="bean b1"></div><div class="bean b2"></div><div class="bean b3"></div><div class="bean b4"></div>
+
+<div class="wrap">
+  <header class="hero">
+    <span class="eyebrow"><span class="dot"></span> Now Serving · Table Ordering</span>
+    <h1 class="display">__CAFE_NAME__<br><em>brewed to</em> brighten your day.</h1>
+    <p>Scan, order, relax — your food comes straight to your table. Every visit earns a stamp, and your <b>5th drink is on us</b>. ☕</p>
+    <div class="hero-cta">
+      <button class="btn btn-grad" onclick="document.getElementById('menu-start').scrollIntoView({behavior:'smooth'})">See the Menu ↓</button>
+      <button class="btn btn-ghost" onclick="showTab('stamps')">🎟️ My Stamps</button>
+    </div>
+    <div class="loyal">
+      <div class="ic">🎁</div>
+      <div><b>Collect stamps, drink FREE</b><span>Every order you pick up adds a stamp to your card. Fill 5 stamps and a free-drink reward unlocks automatically — no card to carry, your phone number is your card.</span></div>
+    </div>
+  </header>
+
+  <div id="track-banner"></div>
+
+  <div class="marquee"><div class="track" id="marquee-track"></div></div>
+
+  <svg class="wave" viewBox="0 0 1200 60" preserveAspectRatio="none" fill="currentColor"><path d="M0,30 C200,60 400,0 600,30 C800,60 1000,0 1200,30 L1200,60 L0,60 Z"/></svg>
+
+  <nav class="tabs">
+    <button id="tab-menu" class="on" onclick="showTab('menu')">🍽️ Menu</button>
+    <button id="tab-stamps" onclick="showTab('stamps')">🎟️ My Stamps</button>
+  </nav>
+
+  <!-- MENU TAB -->
+  <section id="view-menu">
+    <div class="pills" id="pills"></div>
+    <div id="menu-start"></div>
+    <div id="menu-box"><p style="color:var(--muted);padding:26px 2px">Brewing the menu… ☕</p></div>
+  </section>
+
+  <!-- STAMPS TAB -->
+  <section id="view-stamps" class="hidden">
+    <div class="field" style="margin-top:20px">
+      <label for="card-phone">Your mobile number</label>
+      <input id="card-phone" inputmode="numeric" maxlength="13" placeholder="10-digit mobile number">
+      <div class="err" id="card-err"></div>
+    </div>
+    <button class="btn btn-grad" style="width:100%;padding:15px" onclick="loadCard()">Show My Stamp Card</button>
+    <div id="card-box"></div>
+    <div class="stampcard">
+      <h4>📍 Track an order instead?</h4>
+      <div class="field"><label for="trk-id">Order number</label><input id="trk-id" inputmode="numeric" placeholder="e.g. 12"><div class="err" id="trk-err"></div></div>
+      <button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="trackByLookup()">Track My Order</button>
+    </div>
+    <div class="stampcard">
+      <h4>How it works ✨</h4>
+      <p style="color:var(--muted);font-size:13.5px;line-height:1.6;margin-top:8px">
+        1. Order from your table — your number saves your card automatically.<br>
+        2. When your order is served, a stamp lands on your card — by itself.<br>
+        3. Fill 5 stamps → a FREE drink reward code unlocks, valid 7 days.<br>
+        4. Show the code at the counter on your next visit. That's it!
+      </p>
+    </div>
+  </section>
+
+  <p class="foot-note">Powered by <b>CafeLoop</b> · Stamps & rewards run on your phone number — no app, no sign-up.</p>
+</div>
+
+<button class="cartbar hidden" id="cartbar" onclick="openCart()">
+  <span><span class="n" id="cart-n">0</span>&nbsp; <b id="cart-total">₹0</b><small>View cart & order</small></span>
+  <span class="go">Order Now →</span>
+</button>
+
+<div id="overlay-box"></div>
+
+<script>
+const TOKEN = "__CAFE_TOKEN__";
+const $ = id => document.getElementById(id);
+const inr = n => "₹" + Number(n).toLocaleString("en-IN");
+let MENU = {categories: [], items: []};
+let CART = {}; // item_id -> qty
+const savedPhone = localStorage.getItem("cl_phone") || "";
+const savedName = localStorage.getItem("cl_name") || "";
+const params = new URLSearchParams(location.search);
+let TABLE = params.get("table") || localStorage.getItem("cl_table") || "";
+
+/* marquee */
+(() => {
+  const words = ["FRESHLY BREWED","5TH DRINK FREE","STAMPS ON EVERY VISIT","MADE WITH LOVE","SERVED AT YOUR TABLE"];
+  const seq = words.map(w => `<span>✦ ${w}</span>`).join("");
+  $("marquee-track").innerHTML = seq + seq; // duplicated for a seamless loop
+})();
+
+function showTab(t){
+  $("tab-menu").classList.toggle("on", t === "menu");
+  $("tab-stamps").classList.toggle("on", t === "stamps");
+  $("view-menu").classList.toggle("hidden", t !== "menu");
+  $("view-stamps").classList.toggle("hidden", t !== "stamps");
+  window.scrollTo({top: 0, behavior: "smooth"});
+}
+
+/* deterministic little rating chip (design dressing, like the reference) */
+function ratingFor(id){ return (4.2 + ((id * 37) % 8) / 10).toFixed(1); }
+
+async function loadMenu(){
+  try{
+    const r = await fetch(`/api/public/${TOKEN}/info`);
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || "Menu unavailable");
+    MENU = data;
+    renderPills(); renderMenu();
+  }catch(e){
+    $("menu-box").innerHTML = `<p style="color:#C0392B;padding:26px 2px">${e.message}</p>`;
+  }
+}
+
+function renderPills(){
+  const box = $("pills");
+  box.innerHTML = "";
+  MENU.categories.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "pill" + (i === 0 ? " on" : "");
+    b.textContent = c.name;
+    b.style.animationDelay = (i * 0.05) + "s";
+    b.onclick = () => {
+      document.querySelectorAll(".pill").forEach(p => p.classList.remove("on"));
+      b.classList.add("on");
+      const el = document.getElementById("cat-" + c.id);
+      if (el) window.scrollTo({top: el.getBoundingClientRect().top + window.scrollY - 130, behavior: "smooth"});
+    };
+    box.appendChild(b);
+  });
+}
+
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
+}), {threshold: 0.08});
+
+function renderMenu(){
+  const box = $("menu-box");
+  box.innerHTML = "";
+  MENU.categories.forEach(cat => {
+    const items = MENU.items.filter(i => i.category_id === cat.id);
+    if (!items.length) return;
+    const h = document.createElement("h2");
+    h.className = "cat-title"; h.id = "cat-" + cat.id; h.textContent = cat.name;
+    box.appendChild(h);
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    items.forEach((item, idx) => grid.appendChild(itemCard(item, idx)));
+    box.appendChild(grid);
+  });
+  const loose = MENU.items.filter(i => !i.category_id);
+  if (loose.length){
+    const h = document.createElement("h2");
+    h.className = "cat-title"; h.textContent = "More";
+    box.appendChild(h);
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    loose.forEach((item, idx) => grid.appendChild(itemCard(item, idx)));
+    box.appendChild(grid);
+  }
+}
+
+function itemCard(item, idx){
+  const qty = CART[item.id] || 0;
+  const card = document.createElement("div");
+  card.className = "card";
+  card.style.transitionDelay = (idx % 6 * 0.05) + "s";
+  card.innerHTML = `
+    <div class="tile"><span class="emoji">${item.emoji}</span></div>
+    <h3>${item.name}</h3>
+    <span class="rate">★ ${ratingFor(item.id)} loved</span>
+    <div class="row">
+      <span class="price">${inr(item.price)}</span>
+      <span class="ctl">${qty === 0
+        ? `<button class="addbtn" onclick="bump(${item.id},1)">ADD +</button>`
+        : `<span class="stepper"><button onclick="bump(${item.id},-1)">−</button><b>${qty}</b><button onclick="bump(${item.id},1)">+</button></span>`}
+      </span>
+    </div>`;
+  io.observe(card);
+  return card;
+}
+
+function bump(id, d){
+  CART[id] = (CART[id] || 0) + d;
+  if (CART[id] <= 0) delete CART[id];
+  renderMenu(); updateCartBar(true);
+}
+
+function cartTotals(){
+  let n = 0, total = 0;
+  for (const [id, qty] of Object.entries(CART)){
+    const item = MENU.items.find(i => i.id == id);
+    if (item){ n += qty; total += item.price * qty; }
+  }
+  return {n, total};
+}
+
+function updateCartBar(bumpAnim){
+  const {n, total} = cartTotals();
+  const bar = $("cartbar");
+  bar.classList.toggle("hidden", n === 0);
+  $("cart-n").textContent = n;
+  $("cart-total").textContent = inr(total);
+  if (bumpAnim && n > 0){ bar.classList.remove("bump"); void bar.offsetWidth; bar.classList.add("bump"); }
+}
+
+function openCart(){
+  const {total} = cartTotals();
+  const lines = Object.entries(CART).map(([id, qty]) => {
+    const item = MENU.items.find(i => i.id == id);
+    return `<div class="cline"><div><div class="nm">${item.emoji} ${item.name}</div><div class="pr">${inr(item.price)} × ${qty}</div></div>
+      <span class="stepper"><button onclick="bumpSheet(${id},-1)">−</button><b>${qty}</b><button onclick="bumpSheet(${id},1)">+</button></span></div>`;
+  }).join("");
+  const tables = ["", "1","2","3","4","5","6","7","8","9","10","11","12","Parcel"]
+    .map(t => `<button class="${TABLE === t ? "on" : ""}" onclick="setTable('${t}')">${t === "" ? "Counter" : (t === "Parcel" ? "🥡 Parcel" : "Table " + t)}</button>`).join("");
+  $("overlay-box").innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeSheet()">
+    <div class="sheet">
+      <h2>Your Order 🧾</h2>
+      <div style="margin-top:6px">${lines || '<p style="color:var(--muted)">Your cart is empty.</p>'}</div>
+      <div class="total-row"><span>Total</span><span>${inr(total)}</span></div>
+      <div class="field"><label>Table</label><div class="tables">${tables}</div></div>
+      <div class="field"><label for="co-name">Your name</label><input id="co-name" placeholder="e.g. Aarav" value="${savedName.replace(/"/g,"&quot;")}"><div class="err" id="e-name"></div></div>
+      <div class="field"><label for="co-phone">Mobile number (your stamp card)</label><input id="co-phone" inputmode="numeric" maxlength="13" placeholder="10-digit mobile number" value="${savedPhone}"><div class="err" id="e-phone"></div></div>
+      <button class="btn btn-grad place" id="place-btn" onclick="placeOrder()">Place Order · ${inr(total)} →</button>
+      <button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="closeSheet()">Keep Browsing</button>
+    </div>
+  </div>`;
+}
+function bumpSheet(id, d){ bump(id, d); if (cartTotals().n === 0) closeSheet(); else openCart(); }
+function setTable(t){ TABLE = t; localStorage.setItem("cl_table", t); openCart(); }
+function closeSheet(){ $("overlay-box").innerHTML = ""; }
+
+async function placeOrder(){
+  const name = $("co-name").value.trim();
+  const phone = $("co-phone").value.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
+  $("e-name").textContent = name.length < 2 ? "Please enter your name." : "";
+  $("e-phone").textContent = phone.length !== 10 ? "Please enter a 10-digit mobile number." : "";
+  if (name.length < 2 || phone.length !== 10) return;
+  const btn = $("place-btn");
+  btn.disabled = true; btn.textContent = "Sending to the cafe… ☕";
+  const items = Object.entries(CART).map(([id, qty]) => ({item_id: Number(id), qty}));
+  try{
+    const r = await fetch(`/api/public/${TOKEN}/order`, {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({name, phone, table: TABLE, items})
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || "Order failed. Please try again.");
+    localStorage.setItem("cl_phone", phone); localStorage.setItem("cl_name", name);
+    CART = {}; updateCartBar(false);
+    showSuccess(data, phone);
+  }catch(e){
+    btn.disabled = false; btn.textContent = "Try Again →";
+    alert(e.message);
+  }
+}
+
+function stampRow(stamps, animate){
+  let s = "";
+  for (let i = 0; i < 5; i++){
+    if (i < stamps) s += `<div class="stamp full" style="animation-delay:${animate ? i * 0.18 : 0}s">☕</div>`;
+    else if (i === 4) s += `<div class="stamp free">FREE</div>`;
+    else s += `<div class="stamp">·</div>`;
+  }
+  return s;
+}
+
+function rewardHtml(reward){
+  if (!reward) return "";
+  const exp = new Date(reward.expires_on + "T00:00:00").toLocaleDateString("en-IN", {day: "numeric", month: "short"});
+  return `<div class="rewardbox"><small>🎉 YOUR FREE DRINK IS UNLOCKED</small>
+    <div class="code">${reward.code}</div>
+    <small>Show this code at the counter · Valid till ${exp}</small></div>`;
+}
+
+/* ---------- live order tracking ---------- */
+const STEP_FLOW = ["NEW", "ACCEPTED", "PREPARING", "SERVED"];
+let TRACK = null; // {id, phone, timer}
+
+function trackStepsHtml(o){
+  const idx = o.status === "COMPLETED" ? 3 : STEP_FLOW.indexOf(o.status);
+  const labels = [
+    "Order placed",
+    o.status === "NEW" ? "Waiting for the cafe to accept" :
+      (o.prep_minutes ? `Accepted · ready in ~${o.minutes_left != null ? o.minutes_left : o.prep_minutes} min` : "Accepted"),
+    "Preparing your order",
+    o.status === "COMPLETED" ? "Completed — enjoy!" : "Ready / Served 🎉",
+  ];
+  return `<div class="steps">${labels.map((l, i) => `
+    <div class="step ${i < idx ? "done" : ""} ${i === idx ? "now" : ""}">
+      <span class="sdot">${i < idx || o.status === "COMPLETED" ? "✓" : (i + 1)}</span>
+      <span class="slab">${l}</span>
+    </div>`).join("")}</div>`;
+}
+
+function trackerHtml(data){
+  const o = data.order, c = data.customer;
+  return `
+    <div class="stampcard" style="margin-top:0">
+      <h4>📍 Order #${o.id} · Table ${o.table || "—"} · ${inr(o.total)}</h4>
+      ${trackStepsHtml(o)}
+      <p style="color:var(--muted);font-size:13px;margin-top:4px">${o.items.map(i => `${i.qty} × ${i.name}`).join(", ")}</p>
+      <p style="font-weight:800;color:var(--ink2);font-size:14px;margin-top:8px">💵 Pay at the counter</p>
+      <div class="stamps" style="margin-top:13px">${stampRow(c.stamps, false)}</div>
+      <p style="color:var(--muted);font-size:13px;margin-top:10px">${c.stamps} of 5 stamps · ${c.visits} visit${c.visits === 1 ? "" : "s"}${o.status === "SERVED" || o.status === "COMPLETED" ? " · your stamp has landed! ✨" : " · your stamp lands when the order is served."}</p>
+      ${rewardHtml(c.active_reward)}
+    </div>`;
+}
+
+async function pollTrack(){
+  if (!TRACK) return;
+  try{
+    const r = await fetch(`/api/public/${TOKEN}/order-status?order_id=${TRACK.id}&phone=${encodeURIComponent(TRACK.phone)}`);
+    const data = await r.json();
+    if (!r.ok) throw new Error("gone");
+    const html = trackerHtml(data);
+    const banner = $("track-banner");
+    if (banner) banner.innerHTML = html;
+    const inSheet = $("sheet-tracker");
+    if (inSheet) inSheet.innerHTML = html;
+    if (data.order.status === "COMPLETED"){
+      clearInterval(TRACK.timer);
+      localStorage.removeItem("cl_track");
+    }
+  }catch(e){
+    clearInterval(TRACK.timer);
+    localStorage.removeItem("cl_track");
+    const banner = $("track-banner");
+    if (banner) banner.innerHTML = "";
+  }
+}
+
+function startTracking(id, phone){
+  stopTracking();
+  TRACK = {id, phone, timer: setInterval(pollTrack, 4000)};
+  localStorage.setItem("cl_track", JSON.stringify({id, phone}));
+  pollTrack();
+}
+function stopTracking(){ if (TRACK){ clearInterval(TRACK.timer); TRACK = null; } }
+
+function showSuccess(data, phone){
+  $("overlay-box").innerHTML = `
+  <div class="overlay">
+    <div class="sheet success">
+      <div class="check-pop">✓</div>
+      <h2>${data.message}</h2>
+      <p style="color:var(--muted);margin-top:8px;line-height:1.55">This screen now tracks your order live — keep it open, or come back to this page any time.</p>
+      <div id="sheet-tracker" style="margin-top:16px;text-align:left"></div>
+      <button class="btn btn-grad" style="width:100%;margin-top:18px;padding:15px" onclick="closeSheet()">Done — Back to Menu</button>
+    </div>
+  </div>`;
+  startTracking(data.order.id, phone);
+}
+
+async function loadCard(){
+  const phone = $("card-phone").value.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
+  $("card-err").textContent = phone.length !== 10 ? "Please enter a 10-digit mobile number." : "";
+  if (phone.length !== 10) return;
+  localStorage.setItem("cl_phone", phone);
+  const box = $("card-box");
+  box.innerHTML = `<p style="color:var(--muted);margin-top:16px">Fetching your card…</p>`;
+  try{
+    const r = await fetch(`/api/public/${TOKEN}/card?phone=${phone}`);
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || "Could not fetch your card.");
+    const c = data.customer;
+    box.innerHTML = `
+      <div class="stampcard" style="animation:fadeUp .5s both">
+        <h4>🎟️ ${c.name || "Your"} Stamp Card</h4>
+        <div class="stamps">${stampRow(c.stamps, true)}</div>
+        <p style="color:var(--muted);font-size:13.5px;margin-top:11px;line-height:1.6">
+          ${c.stamps} of 5 stamps · ${c.visits} visit${c.visits === 1 ? "" : "s"}${c.favourite ? ` · Favourite: <b style="color:var(--ink2)">${c.favourite}</b>` : ""}
+        </p>
+        ${rewardHtml(c.active_reward)}
+      </div>`;
+  }catch(e){
+    box.innerHTML = `<p style="color:#C0392B;margin-top:16px;font-weight:600">${e.message}</p>`;
+  }
+}
+
+function trackByLookup(){
+  const id = Number($("trk-id").value);
+  const phone = $("card-phone").value.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
+  $("trk-err").textContent = (!id || phone.length !== 10) ? "Enter the order number and your 10-digit mobile number above." : "";
+  if (!id || phone.length !== 10) return;
+  showTab("menu");
+  startTracking(id, phone);
+  window.scrollTo({top: 0, behavior: "smooth"});
+}
+
+/* light parallax on the floating beans */
+addEventListener("scroll", () => {
+  const y = scrollY;
+  document.querySelectorAll(".bean").forEach((b, i) => {
+    b.style.marginTop = (Math.sin((y + i * 90) / 160) * 8 - y * 0.02 * (i + 1)) + "px";
+  });
+}, {passive: true});
+
+if (savedPhone) $("card-phone").value = savedPhone;
+loadMenu();
+/* resume live tracking for an order placed earlier on this phone */
+try{
+  const saved = JSON.parse(localStorage.getItem("cl_track") || "null");
+  if (saved && saved.id && saved.phone) startTracking(saved.id, saved.phone);
+}catch(e){}
+</script>
+</body>
+</html>
