@@ -37,21 +37,44 @@ button{font-family:inherit;cursor:pointer}
 .bean.b4{top:84%;right:-10px;animation-delay:-1.5s;transform:rotate(-38deg)}
 @keyframes floaty{0%,100%{margin-top:0}50%{margin-top:-16px}}
 
-.wrap{max-width:560px;margin:0 auto;padding:0 16px 120px;position:relative}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 150px;position:relative}
 
-/* ---------- hero ---------- */
-.hero{padding:34px 4px 6px;text-align:left;position:relative}
+/* ---------- screens ---------- */
+.screen-in{animation:screenIn .45s cubic-bezier(.2,.9,.3,1.05) both}
+@keyframes screenIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+.scr-head{display:flex;align-items:center;gap:12px;padding:26px 2px 4px}
+.scr-head h2{font-family:'Fraunces',serif;font-size:30px;font-weight:900;line-height:1.05}
+.scr-head .sub{color:var(--muted);font-size:13.5px;margin-top:3px;line-height:1.45}
+.backbtn{flex:none;border:1.5px solid var(--line);background:#fff;color:var(--ink2);font-weight:800;font-size:13.5px;padding:10px 14px;border-radius:999px;box-shadow:var(--shadow);transition:transform .15s}
+.backbtn:active{transform:scale(.94)}
+
+/* ---------- bottom tab bar ---------- */
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(255,253,249,.93);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+.tabbar .in{max-width:560px;margin:0 auto;display:flex}
+.tabbar button{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:800;color:var(--muted);padding:6px 2px;border-radius:14px;position:relative;transition:color .2s}
+.tabbar button .ic{font-size:21px;transition:transform .25s cubic-bezier(.2,.9,.3,1.5)}
+.tabbar button.on{color:var(--ink)}
+.tabbar button.on .ic{transform:translateY(-2px) scale(1.15)}
+.tabbar button .nbadge{position:absolute;top:0;right:calc(50% - 21px);background:var(--grad);color:#fff;font-size:10px;font-weight:800;min-width:19px;height:19px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 5px;box-shadow:0 6px 12px rgba(230,51,41,.35)}
+.tabbar button .livedot{position:absolute;top:2px;right:calc(50% - 17px);width:9px;height:9px;border-radius:50%;background:#3E9B4F;animation:pulse 1.4s infinite}
+
+/* floating cart pill (menu screen shortcut into Checkout) */
+.cartpill{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom));z-index:35;border:none;background:var(--ink);color:#FBEEDC;border-radius:999px;padding:13px 20px;display:flex;align-items:center;gap:10px;box-shadow:0 20px 40px rgba(59,36,22,.4);font-size:14.5px;animation:slideBar .45s cubic-bezier(.2,.9,.3,1.25)}
+.cartpill.bump{animation:bump .45s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes slideBar{from{transform:translate(-50%,70px)}to{transform:translate(-50%,0)}}
+@keyframes bump{0%{transform:translateX(-50%) scale(1)}35%{transform:translateX(-50%) scale(1.05) rotate(-.6deg)}100%{transform:translateX(-50%) scale(1)}}
+.cartpill .n{background:var(--grad);color:#fff;border-radius:10px;padding:3px 9px;font-weight:800;font-size:13px}
+.cartpill b{font-size:15px}
+.cartpill .go{font-weight:800}
+
+/* ---------- hero (menu screen header) ---------- */
+.hero{padding:30px 4px 2px;text-align:left;position:relative}
 .eyebrow{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);color:var(--ink2);font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding:7px 13px;border-radius:999px;box-shadow:var(--shadow);animation:fadeDown .7s cubic-bezier(.2,.9,.3,1.2) both}
 .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:#3E9B4F;animation:pulse 1.6s infinite}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.55}}
-h1.display{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(50px,14.5vw,74px);line-height:.98;letter-spacing:-.015em;margin-top:16px;animation:fadeUp .8s .08s cubic-bezier(.2,.9,.3,1.15) both}
+h1.display{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(44px,12.5vw,64px);line-height:.98;letter-spacing:-.015em;margin-top:14px;animation:fadeUp .8s .08s cubic-bezier(.2,.9,.3,1.15) both}
 h1.display em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-.hero p{color:var(--muted);font-size:15px;line-height:1.55;margin-top:12px;max-width:420px;animation:fadeUp .8s .16s both}
-.hero-cta{display:flex;gap:10px;margin-top:18px;animation:fadeUp .8s .24s both}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:16px;padding:14px 20px;font-size:15px;font-weight:800;transition:transform .15s,box-shadow .2s}
-.btn:active{transform:scale(.96)}
-.btn-grad{background:var(--grad);color:#fff;box-shadow:0 12px 26px rgba(230,51,41,.32)}
-.btn-ghost{background:#fff;color:var(--ink2);border:1.5px solid var(--line)}
+.hero p{color:var(--muted);font-size:14.5px;line-height:1.55;margin-top:10px;max-width:420px;animation:fadeUp .8s .16s both}
 @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
 @keyframes fadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}
 
@@ -63,21 +86,16 @@ h1.display em{font-style:normal;background:var(--grad);-webkit-background-clip:t
 .loyal span{display:block;color:var(--muted);font-size:13px;margin-top:2px;line-height:1.45}
 
 /* ---------- marquee ---------- */
-.marquee{margin:26px -16px 0;background:linear-gradient(90deg,#F59E0B,#FF7A00 55%,#E63329);color:#FBEEDC;overflow:hidden;transform:rotate(-1.2deg) scale(1.02);box-shadow:var(--shadow)}
+.marquee{margin:24px -16px 0;background:linear-gradient(90deg,#F59E0B,#FF7A00 55%,#E63329);color:#FBEEDC;overflow:hidden;transform:rotate(-1.2deg) scale(1.02);box-shadow:var(--shadow)}
 .marquee .track{display:flex;gap:0;white-space:nowrap;width:max-content;animation:scrollx 26s linear infinite;padding:10px 0;font-family:'Fraunces',serif;font-weight:800;font-size:14px;letter-spacing:.22em}
 .marquee .track span{padding:0 14px}
 @keyframes scrollx{to{transform:translateX(-50%)}}
 
 /* wavy divider */
-.wave{display:block;width:100%;height:26px;margin-top:22px;color:#F3E2C7}
-
-/* ---------- tabs ---------- */
-.tabs{display:flex;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px;gap:5px;margin-top:24px;box-shadow:var(--shadow);position:sticky;top:10px;z-index:30}
-.tabs button{flex:1;border:none;background:none;padding:11px;border-radius:999px;font-size:14.5px;font-weight:800;color:var(--muted);transition:all .25s}
-.tabs button.on{background:var(--grad);color:#fff;box-shadow:0 8px 18px rgba(230,51,41,.30)}
+.wave{display:block;width:100%;height:26px;margin-top:20px;color:#F3E2C7}
 
 /* ---------- category pills ---------- */
-.pills{display:flex;gap:9px;overflow-x:auto;padding:18px 2px 6px;scrollbar-width:none;position:sticky;top:66px;z-index:25}
+.pills{display:flex;gap:9px;overflow-x:auto;padding:16px 2px 6px;scrollbar-width:none;position:sticky;top:8px;z-index:25}
 .pills::-webkit-scrollbar{display:none}
 .pill{flex:none;border:1.5px solid var(--line);background:#fff;color:var(--ink2);padding:9px 16px;border-radius:999px;font-size:13.5px;font-weight:700;transition:all .25s;animation:fadeUp .5s both}
 .pill.on{background:var(--grad);color:#fff;border-color:transparent;transform:scale(1.05);box-shadow:var(--shadow)}
@@ -104,19 +122,11 @@ h1.display em{font-style:normal;background:var(--grad);-webkit-background-clip:t
 .stepper button{background:none;border:none;color:#FBEEDC;font-size:19px;font-weight:800;width:24px;line-height:1}
 .stepper b{font-size:14.5px;min-width:16px;text-align:center}
 
-/* ---------- cart bar / sheets ---------- */
-.cartbar{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;width:min(528px,calc(100% - 24px));background:var(--ink);color:#FBEEDC;border-radius:20px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 22px 44px rgba(59,36,22,.4);z-index:40;border:none;text-align:left;animation:slideBar .45s cubic-bezier(.2,.9,.3,1.25)}
-.cartbar.bump{animation:bump .45s cubic-bezier(.2,.9,.3,1.4)}
-@keyframes slideBar{from{transform:translate(-50%,90px)}to{transform:translate(-50%,0)}}
-@keyframes bump{0%{transform:translateX(-50%) scale(1)}35%{transform:translateX(-50%) scale(1.045) rotate(-.6deg)}100%{transform:translateX(-50%) scale(1)}}
-.cartbar .n{background:var(--grad);color:#fff;border-radius:10px;padding:3px 9px;font-weight:800;font-size:13px}
-.cartbar b{font-size:15.5px}.cartbar small{display:block;color:#D9BE96;font-size:12px;margin-top:1px}
-.cartbar .go{font-weight:800;font-size:14.5px}
-.overlay{position:fixed;inset:0;background:rgba(59,36,22,.45);backdrop-filter:blur(3px);z-index:50;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .25s both}
-@keyframes fadeIn{from{opacity:0}}
-.sheet{background:var(--cream);width:min(560px,100%);max-height:92dvh;overflow-y:auto;border-radius:28px 28px 0 0;padding:22px 18px 30px;animation:sheetUp .45s cubic-bezier(.2,.9,.3,1.2)}
-@keyframes sheetUp{from{transform:translateY(70px);opacity:.4}to{transform:none;opacity:1}}
-.sheet h2{font-family:'Fraunces',serif;font-size:24px;font-weight:800}
+/* ---------- shared form bits (checkout / stamps / tracking) ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:16px;padding:14px 20px;font-size:15px;font-weight:800;transition:transform .15s,box-shadow .2s}
+.btn:active{transform:scale(.96)}
+.btn-grad{background:var(--grad);color:#fff;box-shadow:0 12px 26px rgba(230,51,41,.32)}
+.btn-ghost{background:#fff;color:var(--ink2);border:1.5px solid var(--line)}
 .cline{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1.5px dashed var(--line)}
 .cline .nm{font-weight:700;font-size:14.5px}.cline .pr{color:var(--muted);font-size:13px}
 .field{margin-top:14px}
@@ -130,12 +140,14 @@ h1.display em{font-style:normal;background:var(--grad);-webkit-background-clip:t
 .total-row{display:flex;justify-content:space-between;font-family:'Fraunces',serif;font-size:20px;font-weight:800;margin-top:16px}
 .place{width:100%;margin-top:16px;padding:16px;font-size:16px;border-radius:16px}
 .place:disabled{opacity:.6}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;margin-top:16px}
+.emptybox{text-align:center;padding:30px 18px;color:var(--muted);line-height:1.6}
+.emptybox .big{font-size:46px;margin-bottom:8px}
 
 /* ---------- success / stamps ---------- */
-.success{text-align:center;padding-top:8px}
-.check-pop{width:84px;height:84px;margin:6px auto 14px;border-radius:50%;background:linear-gradient(135deg,#4CAF6D,#2E7D46);color:#fff;font-size:42px;display:flex;align-items:center;justify-content:center;box-shadow:0 16px 32px rgba(46,125,70,.35);animation:popIn .55s cubic-bezier(.2,.9,.3,1.5) both}
+.check-pop{width:84px;height:84px;margin:10px auto 12px;border-radius:50%;background:linear-gradient(135deg,#4CAF6D,#2E7D46);color:#fff;font-size:42px;display:flex;align-items:center;justify-content:center;box-shadow:0 16px 32px rgba(46,125,70,.35);animation:popIn .55s cubic-bezier(.2,.9,.3,1.5) both}
 @keyframes popIn{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
-.stampcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;margin-top:18px;text-align:left}
+.stampcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;margin-top:16px;text-align:left}
 .stampcard h4{font-family:'Fraunces',serif;font-size:17px}
 .stamps{display:flex;gap:9px;margin-top:13px}
 .stamp{flex:1;aspect-ratio:1;border-radius:50%;border:2.5px dashed #E4CBA3;display:flex;align-items:center;justify-content:center;font-size:19px;color:#D9BE96;background:#FFF9F1;transition:all .3s}
@@ -150,8 +162,6 @@ h1.display em{font-style:normal;background:var(--grad);-webkit-background-clip:t
 .foot-note b{color:var(--ink2)}
 
 /* live tracking steps */
-#track-banner{margin-top:20px}
-#track-banner:empty{margin-top:0}
 .steps{margin-top:13px;display:flex;flex-direction:column;gap:0}
 .step{display:flex;gap:11px;align-items:flex-start;position:relative;padding:0 0 15px}
 .step::before{content:"";position:absolute;left:12px;top:26px;bottom:0;width:2.5px;background:var(--line);border-radius:2px}
@@ -170,40 +180,71 @@ h1.display em{font-style:normal;background:var(--grad);-webkit-background-clip:t
 <div class="bean b1"></div><div class="bean b2"></div><div class="bean b3"></div><div class="bean b4"></div>
 
 <div class="wrap">
-  <header class="hero">
-    <span class="eyebrow"><span class="dot"></span> Now Serving · Table Ordering</span>
-    <h1 class="display">__CAFE_NAME__<br><em>brewed to</em> brighten your day.</h1>
-    <p>Scan, order, relax — your food comes straight to your table. Every visit earns a stamp, and your <b>5th drink is on us</b>. ☕</p>
-    <div class="hero-cta">
-      <button class="btn btn-grad" onclick="document.getElementById('menu-start').scrollIntoView({behavior:'smooth'})">See the Menu ↓</button>
-      <button class="btn btn-ghost" onclick="showTab('stamps')">🎟️ My Stamps</button>
-    </div>
-    <div class="loyal">
-      <div class="ic">🎁</div>
-      <div><b>Collect stamps, drink FREE</b><span>Every order you pick up adds a stamp to your card. Fill 5 stamps and a free-drink reward unlocks automatically — no card to carry, your phone number is your card.</span></div>
-    </div>
-  </header>
 
-  <div id="track-banner"></div>
-
-  <div class="marquee"><div class="track" id="marquee-track"></div></div>
-
-  <svg class="wave" viewBox="0 0 1200 60" preserveAspectRatio="none" fill="currentColor"><path d="M0,30 C200,60 400,0 600,30 C800,60 1000,0 1200,30 L1200,60 L0,60 Z"/></svg>
-
-  <nav class="tabs">
-    <button id="tab-menu" class="on" onclick="showTab('menu')">🍽️ Menu</button>
-    <button id="tab-stamps" onclick="showTab('stamps')">🎟️ My Stamps</button>
-  </nav>
-
-  <!-- MENU TAB -->
-  <section id="view-menu">
+  <!-- ============ SCREEN: MENU ============ -->
+  <section id="screen-menu" class="screen">
+    <header class="hero">
+      <span class="eyebrow"><span class="dot"></span> Now Serving · Table Ordering</span>
+      <h1 class="display">__CAFE_NAME__<br><em>brewed to</em> brighten your day.</h1>
+      <p>Order from your table — every visit earns a stamp, and your <b>5th drink is on us</b>. ☕ Pay at the counter when you're done.</p>
+    </header>
+    <div class="marquee"><div class="track" id="marquee-track"></div></div>
+    <svg class="wave" viewBox="0 0 1200 60" preserveAspectRatio="none" fill="currentColor"><path d="M0,30 C200,60 400,0 600,30 C800,60 1000,0 1200,30 L1200,60 L0,60 Z"/></svg>
     <div class="pills" id="pills"></div>
     <div id="menu-start"></div>
     <div id="menu-box"><p style="color:var(--muted);padding:26px 2px">Brewing the menu… ☕</p></div>
+    <p class="foot-note">Powered by <b>CafeLoop</b> · Stamps & rewards run on your phone number — no app, no sign-up.</p>
   </section>
 
-  <!-- STAMPS TAB -->
-  <section id="view-stamps" class="hidden">
+  <!-- ============ SCREEN: CHECKOUT ============ -->
+  <section id="screen-checkout" class="screen hidden">
+    <div class="scr-head">
+      <button class="backbtn" onclick="goScreen('menu')">← Menu</button>
+      <div><h2>Your Order 🧾</h2><p class="sub">Check everything, tell us your table — that's it.</p></div>
+    </div>
+    <div id="co-empty" class="panel emptybox hidden">
+      <div class="big">🧺</div>
+      Your cart is empty.<br>
+      <button class="btn btn-grad" style="margin-top:14px" onclick="goScreen('menu')">Browse the Menu →</button>
+    </div>
+    <div id="co-form" class="panel">
+      <div id="co-lines"></div>
+      <div class="total-row"><span>Total</span><span id="co-total">₹0</span></div>
+      <div class="field"><label>Table</label><div class="tables" id="co-tables"></div></div>
+      <div class="field"><label for="co-name">Your name</label><input id="co-name" placeholder="e.g. Aarav"><div class="err" id="e-name"></div></div>
+      <div class="field"><label for="co-phone">Mobile number (your stamp card)</label><input id="co-phone" inputmode="numeric" maxlength="13" placeholder="10-digit mobile number"><div class="err" id="e-phone"></div></div>
+      <button class="btn btn-grad place" id="place-btn" onclick="placeOrder()">Place Order →</button>
+      <p style="text-align:center;color:var(--muted);font-size:13px;margin-top:12px;line-height:1.55">💵 <b>Pay at the counter</b> — nothing to pay on this page.<br>After ordering, watch your food get made on the <b>Order</b> tab.</p>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN: TRACKING ============ -->
+  <section id="screen-track" class="screen hidden">
+    <div class="scr-head">
+      <div><h2>Track Order 📍</h2><p class="sub">Live from the cafe — this screen updates by itself.</p></div>
+    </div>
+    <div id="track-flash" class="hidden" style="text-align:center;padding-top:6px">
+      <div class="check-pop">✓</div>
+      <h3 style="font-family:'Fraunces',serif;font-size:22px" id="track-flash-msg">Order placed!</h3>
+    </div>
+    <div id="track-live"></div>
+    <div class="stampcard">
+      <h4>🔎 Find an order</h4>
+      <div class="field"><label for="trk-id">Order number</label><input id="trk-id" inputmode="numeric" placeholder="e.g. 12"></div>
+      <div class="field"><label for="trk-phone">Mobile number used for the order</label><input id="trk-phone" inputmode="numeric" maxlength="13" placeholder="10-digit mobile number"><div class="err" id="trk-err"></div></div>
+      <button class="btn btn-ghost" style="width:100%;margin-top:12px" onclick="trackByLookup()">Track My Order</button>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN: STAMPS ============ -->
+  <section id="screen-stamps" class="screen hidden">
+    <div class="scr-head">
+      <div><h2>My Stamps 🎟️</h2><p class="sub">Your phone number is your card — nothing to carry, nothing to lose.</p></div>
+    </div>
+    <div class="loyal" style="animation:none">
+      <div class="ic">🎁</div>
+      <div><b>Collect stamps, drink FREE</b><span>Every order you pick up adds a stamp to your card. Fill 5 stamps and a free-drink reward unlocks automatically.</span></div>
+    </div>
     <div class="field" style="margin-top:20px">
       <label for="card-phone">Your mobile number</label>
       <input id="card-phone" inputmode="numeric" maxlength="13" placeholder="10-digit mobile number">
@@ -211,11 +252,6 @@ h1.display em{font-style:normal;background:var(--grad);-webkit-background-clip:t
     </div>
     <button class="btn btn-grad" style="width:100%;padding:15px" onclick="loadCard()">Show My Stamp Card</button>
     <div id="card-box"></div>
-    <div class="stampcard">
-      <h4>📍 Track an order instead?</h4>
-      <div class="field"><label for="trk-id">Order number</label><input id="trk-id" inputmode="numeric" placeholder="e.g. 12"><div class="err" id="trk-err"></div></div>
-      <button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="trackByLookup()">Track My Order</button>
-    </div>
     <div class="stampcard">
       <h4>How it works ✨</h4>
       <p style="color:var(--muted);font-size:13.5px;line-height:1.6;margin-top:8px">
@@ -227,15 +263,18 @@ h1.display em{font-style:normal;background:var(--grad);-webkit-background-clip:t
     </div>
   </section>
 
-  <p class="foot-note">Powered by <b>CafeLoop</b> · Stamps & rewards run on your phone number — no app, no sign-up.</p>
 </div>
 
-<button class="cartbar hidden" id="cartbar" onclick="openCart()">
-  <span><span class="n" id="cart-n">0</span>&nbsp; <b id="cart-total">₹0</b><small>View cart & order</small></span>
-  <span class="go">Order Now →</span>
+<button class="cartpill hidden" id="cartpill" onclick="goScreen('checkout')">
+  <span class="n" id="cart-n">0</span><b id="cart-total">₹0</b><span class="go">View Order →</span>
 </button>
 
-<div id="overlay-box"></div>
+<nav class="tabbar"><div class="in">
+  <button data-screen="menu" class="on" onclick="goScreen('menu')"><span class="ic">🍽️</span>Menu</button>
+  <button data-screen="checkout" onclick="goScreen('checkout')"><span class="ic">🧾</span>Checkout<span class="nbadge hidden" id="tab-cart-n">0</span></button>
+  <button data-screen="track" onclick="goScreen('track')"><span class="ic">📍</span>Order<span class="livedot hidden" id="tab-track-dot"></span></button>
+  <button data-screen="stamps" onclick="goScreen('stamps')"><span class="ic">🎟️</span>Stamps</button>
+</div></nav>
 
 <script>
 const TOKEN = "__CAFE_TOKEN__";
@@ -255,12 +294,22 @@ let TABLE = params.get("table") || localStorage.getItem("cl_table") || "";
   $("marquee-track").innerHTML = seq + seq; // duplicated for a seamless loop
 })();
 
-function showTab(t){
-  $("tab-menu").classList.toggle("on", t === "menu");
-  $("tab-stamps").classList.toggle("on", t === "stamps");
-  $("view-menu").classList.toggle("hidden", t !== "menu");
-  $("view-stamps").classList.toggle("hidden", t !== "stamps");
-  window.scrollTo({top: 0, behavior: "smooth"});
+/* ---------- screen navigation (each screen = its own page) ---------- */
+const SCREENS = ["menu", "checkout", "track", "stamps"];
+let CUR = "menu";
+const SCROLLPOS = {}; // per-screen scroll memory
+
+function goScreen(name){
+  if (CUR === name){ window.scrollTo({top: 0, behavior: "smooth"}); return; }
+  SCROLLPOS[CUR] = window.scrollY;
+  SCREENS.forEach(s => $("screen-" + s).classList.toggle("hidden", s !== name));
+  document.querySelectorAll(".tabbar button").forEach(b => b.classList.toggle("on", b.dataset.screen === name));
+  CUR = name;
+  const el = $("screen-" + name);
+  el.classList.remove("screen-in"); void el.offsetWidth; el.classList.add("screen-in");
+  window.scrollTo(0, SCROLLPOS[name] || 0);
+  if (name === "checkout") renderCheckout();
+  updateCartUI(false);
 }
 
 /* deterministic little rating chip (design dressing, like the reference) */
@@ -290,7 +339,7 @@ function renderPills(){
       document.querySelectorAll(".pill").forEach(p => p.classList.remove("on"));
       b.classList.add("on");
       const el = document.getElementById("cat-" + c.id);
-      if (el) window.scrollTo({top: el.getBoundingClientRect().top + window.scrollY - 130, behavior: "smooth"});
+      if (el) window.scrollTo({top: el.getBoundingClientRect().top + window.scrollY - 70, behavior: "smooth"});
     };
     box.appendChild(b);
   });
@@ -349,7 +398,8 @@ function itemCard(item, idx){
 function bump(id, d){
   CART[id] = (CART[id] || 0) + d;
   if (CART[id] <= 0) delete CART[id];
-  renderMenu(); updateCartBar(true);
+  renderMenu(); updateCartUI(true);
+  if (CUR === "checkout") renderCheckout();
 }
 
 function cartTotals(){
@@ -361,45 +411,41 @@ function cartTotals(){
   return {n, total};
 }
 
-function updateCartBar(bumpAnim){
+function updateCartUI(bumpAnim){
   const {n, total} = cartTotals();
-  const bar = $("cartbar");
-  bar.classList.toggle("hidden", n === 0);
+  const pill = $("cartpill");
+  pill.classList.toggle("hidden", n === 0 || CUR !== "menu");
   $("cart-n").textContent = n;
   $("cart-total").textContent = inr(total);
-  if (bumpAnim && n > 0){ bar.classList.remove("bump"); void bar.offsetWidth; bar.classList.add("bump"); }
+  const badge = $("tab-cart-n");
+  badge.textContent = n;
+  badge.classList.toggle("hidden", n === 0);
+  if (bumpAnim && n > 0){ pill.classList.remove("bump"); void pill.offsetWidth; pill.classList.add("bump"); }
 }
 
-function openCart(){
-  const {total} = cartTotals();
-  const lines = Object.entries(CART).map(([id, qty]) => {
+/* ---------- checkout screen ---------- */
+function renderCheckout(){
+  const {n, total} = cartTotals();
+  $("co-empty").classList.toggle("hidden", n !== 0);
+  $("co-form").classList.toggle("hidden", n === 0);
+  if (n === 0) return;
+  $("co-lines").innerHTML = Object.entries(CART).map(([id, qty]) => {
     const item = MENU.items.find(i => i.id == id);
     return `<div class="cline"><div><div class="nm">${item.emoji} ${item.name}</div><div class="pr">${inr(item.price)} × ${qty}</div></div>
-      <span class="stepper"><button onclick="bumpSheet(${id},-1)">−</button><b>${qty}</b><button onclick="bumpSheet(${id},1)">+</button></span></div>`;
+      <span class="stepper"><button onclick="bump(${id},-1)">−</button><b>${qty}</b><button onclick="bump(${id},1)">+</button></span></div>`;
   }).join("");
-  const tables = ["", "1","2","3","4","5","6","7","8","9","10","11","12","Parcel"]
+  $("co-tables").innerHTML = ["", "1","2","3","4","5","6","7","8","9","10","11","12","Parcel"]
     .map(t => `<button class="${TABLE === t ? "on" : ""}" onclick="setTable('${t}')">${t === "" ? "Counter" : (t === "Parcel" ? "🥡 Parcel" : "Table " + t)}</button>`).join("");
-  $("overlay-box").innerHTML = `
-  <div class="overlay" onclick="if(event.target===this)closeSheet()">
-    <div class="sheet">
-      <h2>Your Order 🧾</h2>
-      <div style="margin-top:6px">${lines || '<p style="color:var(--muted)">Your cart is empty.</p>'}</div>
-      <div class="total-row"><span>Total</span><span>${inr(total)}</span></div>
-      <div class="field"><label>Table</label><div class="tables">${tables}</div></div>
-      <div class="field"><label for="co-name">Your name</label><input id="co-name" placeholder="e.g. Aarav" value="${savedName.replace(/"/g,"&quot;")}"><div class="err" id="e-name"></div></div>
-      <div class="field"><label for="co-phone">Mobile number (your stamp card)</label><input id="co-phone" inputmode="numeric" maxlength="13" placeholder="10-digit mobile number" value="${savedPhone}"><div class="err" id="e-phone"></div></div>
-      <button class="btn btn-grad place" id="place-btn" onclick="placeOrder()">Place Order · ${inr(total)} →</button>
-      <button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="closeSheet()">Keep Browsing</button>
-    </div>
-  </div>`;
+  $("co-total").textContent = inr(total);
+  $("place-btn").textContent = `Place Order · ${inr(total)} →`;
 }
-function bumpSheet(id, d){ bump(id, d); if (cartTotals().n === 0) closeSheet(); else openCart(); }
-function setTable(t){ TABLE = t; localStorage.setItem("cl_table", t); openCart(); }
-function closeSheet(){ $("overlay-box").innerHTML = ""; }
+function setTable(t){ TABLE = t; localStorage.setItem("cl_table", t); renderCheckout(); }
+
+function cleanPhone(v){ return v.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, ""); }
 
 async function placeOrder(){
   const name = $("co-name").value.trim();
-  const phone = $("co-phone").value.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
+  const phone = cleanPhone($("co-phone").value);
   $("e-name").textContent = name.length < 2 ? "Please enter your name." : "";
   $("e-phone").textContent = phone.length !== 10 ? "Please enter a 10-digit mobile number." : "";
   if (name.length < 2 || phone.length !== 10) return;
@@ -414,8 +460,12 @@ async function placeOrder(){
     const data = await r.json();
     if (!r.ok) throw new Error(data.detail || "Order failed. Please try again.");
     localStorage.setItem("cl_phone", phone); localStorage.setItem("cl_name", name);
-    CART = {}; updateCartBar(false);
-    showSuccess(data, phone);
+    CART = {}; updateCartUI(false);
+    btn.disabled = false;
+    /* the order now lives on its own Tracking screen */
+    goScreen("track");
+    showTrackFlash(data.message);
+    startTracking(data.order.id, phone);
   }catch(e){
     btn.disabled = false; btn.textContent = "Try Again →";
     alert(e.message);
@@ -440,7 +490,7 @@ function rewardHtml(reward){
     <small>Show this code at the counter · Valid till ${exp}</small></div>`;
 }
 
-/* ---------- live order tracking ---------- */
+/* ---------- live order tracking (its own screen) ---------- */
 const STEP_FLOW = ["NEW", "ACCEPTED", "PREPARING", "SERVED"];
 let TRACK = null; // {id, phone, timer}
 
@@ -474,26 +524,30 @@ function trackerHtml(data){
     </div>`;
 }
 
+function renderTrackEmpty(){
+  $("track-live").innerHTML = `
+    <div class="panel emptybox">
+      <div class="big">📍</div>
+      No live order on this phone right now.<br>Place an order from the Menu tab — it will appear here and update live — or find one below.
+    </div>`;
+}
+
 async function pollTrack(){
   if (!TRACK) return;
   try{
     const r = await fetch(`/api/public/${TOKEN}/order-status?order_id=${TRACK.id}&phone=${encodeURIComponent(TRACK.phone)}`);
     const data = await r.json();
     if (!r.ok) throw new Error("gone");
-    const html = trackerHtml(data);
-    const banner = $("track-banner");
-    if (banner) banner.innerHTML = html;
-    const inSheet = $("sheet-tracker");
-    if (inSheet) inSheet.innerHTML = html;
+    $("track-live").innerHTML = trackerHtml(data);
     if (data.order.status === "COMPLETED"){
       clearInterval(TRACK.timer);
       localStorage.removeItem("cl_track");
+      $("tab-track-dot").classList.add("hidden");
+      TRACK.done = true;
     }
   }catch(e){
-    clearInterval(TRACK.timer);
-    localStorage.removeItem("cl_track");
-    const banner = $("track-banner");
-    if (banner) banner.innerHTML = "";
+    stopTracking();
+    renderTrackEmpty();
   }
 }
 
@@ -501,26 +555,35 @@ function startTracking(id, phone){
   stopTracking();
   TRACK = {id, phone, timer: setInterval(pollTrack, 4000)};
   localStorage.setItem("cl_track", JSON.stringify({id, phone}));
+  $("tab-track-dot").classList.remove("hidden");
   pollTrack();
 }
-function stopTracking(){ if (TRACK){ clearInterval(TRACK.timer); TRACK = null; } }
-
-function showSuccess(data, phone){
-  $("overlay-box").innerHTML = `
-  <div class="overlay">
-    <div class="sheet success">
-      <div class="check-pop">✓</div>
-      <h2>${data.message}</h2>
-      <p style="color:var(--muted);margin-top:8px;line-height:1.55">This screen now tracks your order live — keep it open, or come back to this page any time.</p>
-      <div id="sheet-tracker" style="margin-top:16px;text-align:left"></div>
-      <button class="btn btn-grad" style="width:100%;margin-top:18px;padding:15px" onclick="closeSheet()">Done — Back to Menu</button>
-    </div>
-  </div>`;
-  startTracking(data.order.id, phone);
+function stopTracking(){
+  if (TRACK){ clearInterval(TRACK.timer); TRACK = null; }
+  $("tab-track-dot").classList.add("hidden");
 }
 
+function showTrackFlash(msg){
+  const f = $("track-flash");
+  $("track-flash-msg").textContent = msg || "Order placed!";
+  f.classList.remove("hidden");
+  const pop = f.querySelector(".check-pop");
+  pop.style.animation = "none"; void pop.offsetWidth; pop.style.animation = "";
+  setTimeout(() => f.classList.add("hidden"), 6000);
+}
+
+function trackByLookup(){
+  const id = Number($("trk-id").value);
+  const phone = cleanPhone($("trk-phone").value);
+  $("trk-err").textContent = (!id || phone.length !== 10) ? "Enter the order number and the 10-digit mobile number used for the order." : "";
+  if (!id || phone.length !== 10) return;
+  $("track-flash").classList.add("hidden");
+  startTracking(id, phone);
+}
+
+/* ---------- stamps screen ---------- */
 async function loadCard(){
-  const phone = $("card-phone").value.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
+  const phone = cleanPhone($("card-phone").value);
   $("card-err").textContent = phone.length !== 10 ? "Please enter a 10-digit mobile number." : "";
   if (phone.length !== 10) return;
   localStorage.setItem("cl_phone", phone);
@@ -545,16 +608,6 @@ async function loadCard(){
   }
 }
 
-function trackByLookup(){
-  const id = Number($("trk-id").value);
-  const phone = $("card-phone").value.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
-  $("trk-err").textContent = (!id || phone.length !== 10) ? "Enter the order number and your 10-digit mobile number above." : "";
-  if (!id || phone.length !== 10) return;
-  showTab("menu");
-  startTracking(id, phone);
-  window.scrollTo({top: 0, behavior: "smooth"});
-}
-
 /* light parallax on the floating beans */
 addEventListener("scroll", () => {
   const y = scrollY;
@@ -563,13 +616,16 @@ addEventListener("scroll", () => {
   });
 }, {passive: true});
 
-if (savedPhone) $("card-phone").value = savedPhone;
+if (savedPhone){ $("card-phone").value = savedPhone; $("trk-phone").value = savedPhone; }
+if (savedName) $("co-name").value = savedName;
+if (savedPhone) $("co-phone").value = savedPhone;
 loadMenu();
 /* resume live tracking for an order placed earlier on this phone */
 try{
   const saved = JSON.parse(localStorage.getItem("cl_track") || "null");
   if (saved && saved.id && saved.phone) startTracking(saved.id, saved.phone);
-}catch(e){}
+  else renderTrackEmpty();
+}catch(e){ renderTrackEmpty(); }
 </script>
 </body>
 </html>
