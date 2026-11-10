@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
 <style>
 :root{
   --cream:#FFF9F1; --cream2:#FBEEDC; --paper:#FFFDF9; --ink:#3B2416; --ink2:#6B4A2B;
@@ -76,6 +77,7 @@ button{font-family:inherit;cursor:pointer}
 .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:#3E9B4F;animation:pulse 1.6s infinite}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.55}}
 h1.display{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(44px,12.5vw,64px);line-height:.98;letter-spacing:-.015em;margin-top:14px;animation:fadeUp .8s .08s cubic-bezier(.2,.9,.3,1.15) both}
+h1.display .cafe-name{font-family:'Cormorant Garamond',serif;font-weight:600;letter-spacing:.015em}
 h1.display em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero p{color:var(--muted);font-size:14.5px;line-height:1.55;margin-top:10px;max-width:420px;animation:fadeUp .8s .16s both}
 @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
@@ -189,7 +191,7 @@ h1.display em{font-style:normal;background:var(--grad);-webkit-background-clip:t
     <header class="hero">
       <span class="eyebrow"><span class="dot"></span> Now Serving · Table Ordering</span>
       <img class="cafe-logo" src="__CAFE_LOGO__" alt="__CAFE_NAME__ logo" onerror="this.remove()">
-      <h1 class="display">__CAFE_NAME__<br><em>brewed to</em> brighten your day.</h1>
+      <h1 class="display"><span class="cafe-name">__CAFE_NAME__</span><br><em>brewed to</em> brighten your day.</h1>
       <p>Order from your table — every visit earns a stamp, and your <b>5th drink is on us</b>. ☕ Pay at the counter when you're done.</p>
     </header>
     <div class="marquee"><div class="track" id="marquee-track"></div></div>
