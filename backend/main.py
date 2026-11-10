@@ -62,6 +62,9 @@ BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR.parent / "frontend"
 STATIC_DIR = BASE_DIR / "static"
 PAYMENT_QR_FILE = STATIC_DIR / "payment-qr.png"
+# The cafe's own brand logo (white-label): shown on the public ordering
+# page. Belongs to the CAFE, not to the CafeLoop product.
+CAFE_LOGO_FILE = STATIC_DIR / "cafe-logo.png"
 LOG_DIR = BASE_DIR.parent / "logs"
 
 # ---------------------------------------------------------------------------
@@ -229,7 +232,7 @@ GATE_OPEN_PATHS = {
     "/api/login", "/api/signup", "/api/logout", "/api/me",
     "/api/auth/forgot", "/api/auth/reset",
     "/api/details", "/api/plan", "/api/plan/switch",
-    "/payment-qr.png",
+    "/payment-qr.png", "/cafe-logo.png", "/icon-512.png",
 }
 
 OTP_OPEN_PATHS = {"/api/me", "/api/logout", "/api/config", "/api/auth/config"}
@@ -2199,6 +2202,9 @@ def public_order_page(token: str, db: Session = Depends(get_db)):
         return JSONResponse(status_code=404, content={"detail": "Not found."})
     html = (FRONTEND_DIR / "order.html").read_text(encoding="utf-8")
     html = html.replace("__CAFE_NAME__", html_escape(cafe_display_name(db, owner_id)))
+    # Cafe branding: the cafe's own logo when one is on file, else empty
+    # (the page hides the <img>, leaving the name-only hero).
+    html = html.replace("__CAFE_LOGO__", "/cafe-logo.png" if CAFE_LOGO_FILE.exists() else "")
     html = html.replace("__CAFE_TOKEN__", token)
     return HTMLResponse(content=html, status_code=200)
 
@@ -2250,6 +2256,25 @@ def payment_qr():
     if PAYMENT_QR_FILE.exists():
         return FileResponse(PAYMENT_QR_FILE, media_type="image/png")
     return err(404, "Payment QR is not set up yet.")
+
+
+@app.get("/cafe-logo.png")
+def cafe_logo():
+    """The cafe's own brand logo — white-label cafe branding for the
+    public ordering page (the CAFE's logo, not CafeLoop product art).
+    Public like the ordering page itself; carries no account data."""
+    if CAFE_LOGO_FILE.exists():
+        return FileResponse(CAFE_LOGO_FILE, media_type="image/png")
+    return err(404, "Cafe logo is not set up yet.")
+
+
+@app.get("/icon-512.png")
+def app_icon():
+    """Square cup-mark icon (favicon / app icon) for the cafe pages."""
+    icon = FRONTEND_DIR / "icon-512.png"
+    if icon.exists():
+        return FileResponse(icon, media_type="image/png")
+    return err(404, "Icon not found.")
 
 
 # ---------------------------------------------------------------------------

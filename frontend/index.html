@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>CafeLoop — Owner App</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
+<link rel="icon" type="image/png" href="/icon-512.png">
+<link rel="apple-touch-icon" href="/icon-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -64,6 +65,8 @@ h1.display em, .grad-text{font-style:normal;background:var(--grad);-webkit-backg
 
 /* app chrome */
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:4px}
+.topbar .tb-left{display:flex;align-items:center;gap:11px;min-width:0}
+#tb-logo{width:46px;height:46px;flex:none;object-fit:cover;border-radius:14px;border:1px solid var(--line);box-shadow:var(--shadow);background:#FBF6EC}
 .topbar .cafe{font-family:'Fraunces',serif;font-size:20px;font-weight:800}
 .pill-live{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 11px;font-size:12px;font-weight:800;color:var(--ink2)}
 .pill-live .dot{width:7px;height:7px;border-radius:50%;background:#3E9B4F;animation:pulse 1.6s infinite}
@@ -258,7 +261,7 @@ h1.display em, .grad-text{font-style:normal;background:var(--grad);-webkit-backg
 <!-- ================= APP ================= -->
 <section id="app-view" class="hidden">
   <div class="topbar">
-    <div><div class="small">Welcome back 👋</div><div class="cafe" id="tb-cafe">My Cafe</div></div>
+    <div class="tb-left"><img id="tb-logo" src="/cafe-logo.png" alt="" onerror="this.remove()"><div><div class="small">Welcome back 👋</div><div class="cafe" id="tb-cafe">My Cafe</div></div></div>
     <span class="pill-live"><span class="dot"></span> LIVE</span>
   </div>
 
