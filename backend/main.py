@@ -11,6 +11,7 @@ Run from this folder:
 """
 import hashlib
 import hmac
+import json
 import logging
 import os
 import re
@@ -165,8 +166,10 @@ async def security_headers(request: Request, call_next):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Content-Security-Policy"] = CSP
+    # Camera is allowed ONLY for this site itself (face unlock +
+    # enrollment); microphone, location and sensors are off entirely.
     response.headers["Permissions-Policy"] = (
-        "camera=(), microphone=(), geolocation=(), usb=(), "
+        "camera=(self), microphone=(), geolocation=(), usb=(), "
         "magnetometer=(), gyroscope=(), accelerometer=()"
     )
     if _request_is_https(request):
@@ -217,7 +220,9 @@ async def csrf_origin_check(request: Request, call_next):
 # stay reachable:
 #   * details step .......... /api/details (GET/PUT)
 #   * plan + payment ........ /api/plans, /api/plan, /api/plan/switch,
-#                             /payment-qr.png (the QR image)
+#                             /payment-qr.png (the QR image), and the
+#                             face-unlock flow itself (it IS an unlock
+#                             path: /api/face-unlock/*)
 #   * session ............... /api/me, /api/logout, login/signup, Google
 #                             auth, /api/auth/config, /api/config
 # Everything else under /api/ answers 402 with code "payment_required".
@@ -232,6 +237,9 @@ GATE_OPEN_PATHS = {
     "/api/login", "/api/signup", "/api/logout", "/api/me",
     "/api/auth/forgot", "/api/auth/reset",
     "/api/details", "/api/plan", "/api/plan/switch",
+    "/api/face-unlock/template",
+    "/api/face-unlock/challenge",
+    "/api/face-unlock/verify",
     "/payment-qr.png", "/cafe-logo.png", "/icon-512.png",
 }
 
@@ -247,7 +255,7 @@ def _gate_block_response(status_code: int, content: dict, request: Request = Non
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Content-Security-Policy"] = CSP
     response.headers["Permissions-Policy"] = (
-        "camera=(), microphone=(), geolocation=(), usb=(), "
+        "camera=(self), microphone=(), geolocation=(), usb=(), "
         "magnetometer=(), gyroscope=(), accelerometer=()"
     )
     if request is not None and _request_is_https(request):
@@ -540,6 +548,17 @@ def set_setting(db: Session, key: str, value: str) -> None:
         row.value = value
 
 
+def _pay_method_label(method: str) -> str:
+    """Human label for a recorded payment method — the same wording
+    the owner app uses (mirrors Do Gym's payMethodLabel)."""
+    return {
+        "face_unlock": "Farhan's face scan",
+        "collected_in_person": "our team, in person",
+        "upi_qr": "UPI QR",
+        "razorpay": "Razorpay",
+    }.get(method or "", "online payment")
+
+
 def payment_dict(p: models.SubscriptionPayment) -> dict:
     return {
         "plan_id": p.plan_id,
@@ -547,6 +566,7 @@ def payment_dict(p: models.SubscriptionPayment) -> dict:
         "period": p.period,
         "amount": p.amount,
         "method": p.method,
+        "method_label": _pay_method_label(p.method),
         "status": p.status,  # paid | pending
         "date": p.created_at.date().isoformat() if p.created_at else "",
     }
@@ -656,6 +676,9 @@ def get_plan_state(db: Session, user_id: int) -> dict:
         "subscription_active": info["active"],
         "subscription_status": info["status"],
         "subscription_expires_on": info["expires_on"],
+        # The locked payment screen shows its "Unlock by Face Scan"
+        # action only when Farhan has enrolled his face in Control.
+        "face_unlock_available": _face_template(db) is not None,
         "last_payment": payment_dict(recent[0]) if recent else None,
         "payments": [payment_dict(p) for p in recent],
         "usage": {"customers_used": customers_used, "customer_limit": None},
@@ -2561,6 +2584,293 @@ def admin_switch_off(body: AdminActivateIn, request: Request, db: Session = Depe
 
 
 # ---------------------------------------------------------------------------
+# Face unlock — Farhan's final unlock decision (ported from Do Gym,
+# 2026-10-23). He is physically at the cafe (he just collected the
+# money in person). The owner opens the locked payment screen and taps
+# "Pay — Unlock by Face Scan": the OWNER's device camera matches
+# Farhan's face against the template he enrolled from Control, with a
+# liveness beat (blink / head-turn) against photo spoofing. On a
+# verified match the server records the activation through the
+# standard path (method "face_unlock", the period selected on the pay
+# screen, server-computed amount) and the pay-first gate lifts — the
+# owner's page flips into the app exactly like every other route.
+#
+# The honest security shape (same as Do Gym): the face MATCH runs in
+# the browser, so this is convenience-grade, not bank-grade — Farhan's
+# informed choice. What the server enforces: a short-lived (120s),
+# single-use challenge bound to this owner with a SERVER-chosen
+# liveness action; the reported match distance must beat the
+# threshold; 5 failed verifications lock face unlock for that cafe
+# for 15 minutes; Switch Off still overrides a face-unlocked cafe; and
+# the stored template is numeric descriptors only — never a photo.
+# ---------------------------------------------------------------------------
+FACE_CHALLENGE_TTL = 120  # seconds
+FACE_MAX_FAILS = 5
+FACE_LOCKOUT_SECONDS = 15 * 60
+FACE_MATCH_THRESHOLD = 0.5  # face-api euclidean distance for a match
+FACE_ACTIONS = ("blink", "turn_left", "turn_right")
+_face_challenges: dict[str, dict] = {}
+_face_fails: dict[int, list[float]] = defaultdict(list)
+_face_lockouts: dict[int, float] = {}
+
+
+def _face_template(db: Session):
+    """{"descriptors": [[128 floats], ...], "updated_at": iso} or None."""
+    row = db.query(models.FaceTemplate).order_by(models.FaceTemplate.id).first()
+    if row is None:
+        return None
+    try:
+        descriptors = json.loads(row.descriptors or "[]")
+    except ValueError:
+        return None
+    if not descriptors:
+        return None
+    updated = getattr(row, "updated_at", None)
+    return {
+        "descriptors": descriptors,
+        "updated_at": updated.isoformat() if updated else None,
+    }
+
+
+def _face_locked_out(user_id: int) -> bool:
+    until = _face_lockouts.get(user_id, 0)
+    if until and time.time() < until:
+        return True
+    if until:
+        _face_lockouts.pop(user_id, None)
+    return False
+
+
+def _face_record_fail(user_id: int) -> None:
+    now = time.time()
+    fails = [t for t in _face_fails[user_id] if now - t < FACE_LOCKOUT_SECONDS]
+    fails.append(now)
+    if len(fails) >= FACE_MAX_FAILS:
+        _face_lockouts[user_id] = now + FACE_LOCKOUT_SECONDS
+        _face_fails[user_id] = []
+        logger.warning(
+            "Face unlock LOCKED OUT for user %s after %d failed attempts",
+            user_id, FACE_MAX_FAILS,
+        )
+    else:
+        _face_fails[user_id] = fails
+
+
+@app.get("/static/face/{name}")
+def face_asset(name: str):
+    """The vendored face-api library + model weights (served locally —
+    no runtime CDN). A strict filename pattern; nothing else in
+    static/ is reachable through this route."""
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", name) or ".." in name:
+        return err(404, "Not found.")
+    path = STATIC_DIR / "face" / name
+    if not path.is_file():
+        return err(404, "Not found.")
+    if name.endswith(".js"):
+        media = "application/javascript"
+    elif name.endswith(".json"):
+        media = "application/json"
+    else:
+        media = "application/octet-stream"
+    return FileResponse(path, media_type=media)
+
+
+class FaceTemplateIn(BaseModel):
+    descriptors: list = Field(default_factory=list)
+    csrf: str = ""
+
+
+@app.post("/api/admin/face-template")
+def admin_face_template_enroll(
+    body: FaceTemplateIn, request: Request, db: Session = Depends(get_db)
+):
+    """Enroll or replace Farhan's face template (numeric descriptors
+    only — computed in his browser in Control; no photo ever arrives
+    here). Admin: secret header OR the /control session (with CSRF)."""
+    auth, deny = _admin_api_guard(request)
+    if deny is not None:
+        return deny
+    if not _admin_csrf_ok(auth, body.csrf):
+        return err(403, "Admin session check failed. Please reload Control.")
+    descriptors = body.descriptors
+    if not isinstance(descriptors, list) or not (1 <= len(descriptors) <= 6):
+        return err(400, "Please capture between 1 and 6 poses.")
+    cleaned = []
+    for d in descriptors:
+        if (
+            not isinstance(d, list)
+            or len(d) != 128
+            or any(isinstance(x, bool) or not isinstance(x, (int, float)) for x in d)
+        ):
+            return err(400, "That face data does not look right. Please try again.")
+        cleaned.append([round(float(x), 6) for x in d])
+    row = db.query(models.FaceTemplate).order_by(models.FaceTemplate.id).first()
+    payload = json.dumps(cleaned)
+    if row is None:
+        db.add(models.FaceTemplate(descriptors=payload, updated_at=datetime.now()))
+    else:
+        row.descriptors = payload
+        row.updated_at = datetime.now()
+    db.commit()
+    logger.info("Face template (re)enrolled by admin: %d pose(s)", len(cleaned))
+    return {"ok": True, "poses": len(cleaned), "face_enrolled": True}
+
+
+@app.get("/api/admin/face-template")
+def admin_face_template_get(request: Request, db: Session = Depends(get_db)):
+    """The enrolled descriptors, for admin-side reads. Admin auth
+    required."""
+    auth, deny = _admin_api_guard(request)
+    if deny is not None:
+        return deny
+    tpl = _face_template(db)
+    if tpl is None:
+        return {"enrolled": False, "descriptors": []}
+    return {"enrolled": True, "descriptors": tpl["descriptors"]}
+
+
+@app.post("/api/admin/face-template/remove")
+def admin_face_template_remove(request: Request, db: Session = Depends(get_db)):
+    """Remove the enrolled template (face unlock hides everywhere)."""
+    auth, deny = _admin_api_guard(request)
+    if deny is not None:
+        return deny
+    if not _admin_csrf_ok(auth, None):
+        return err(403, "Admin session check failed. Please reload Control.")
+    db.query(models.FaceTemplate).delete()
+    db.commit()
+    logger.info("Face template removed by admin")
+    return {"ok": True, "face_enrolled": False}
+
+
+@app.get("/api/face-unlock/template")
+def face_unlock_template(
+    db: Session = Depends(get_db),
+    user: models.User | JSONResponse = Depends(current_user),
+):
+    """The enrolled descriptors, for the owner's browser to match
+    against locally. Owner session required; reachable while gated —
+    it is part of the unlock flow itself."""
+    if isinstance(user, JSONResponse):
+        return user
+    tpl = _face_template(db)
+    if tpl is None:
+        return {"enrolled": False, "descriptors": []}
+    return {"enrolled": True, "descriptors": tpl["descriptors"]}
+
+
+@app.post("/api/face-unlock/challenge")
+def face_unlock_challenge(
+    db: Session = Depends(get_db),
+    user: models.User | JSONResponse = Depends(current_user),
+):
+    """Start a scan session: a single-use, 120-second challenge bound
+    to this owner, with a server-chosen liveness action."""
+    if isinstance(user, JSONResponse):
+        return user
+    if _face_template(db) is None:
+        return err(400, "Face unlock is not set up yet.")
+    if _face_locked_out(user.id):
+        return err(
+            429,
+            "Too many failed face attempts. Please wait 15 minutes, or "
+            "ask CafeLoop to activate you from Control.",
+        )
+    for cid in [c for c, ch in _face_challenges.items() if ch["user_id"] == user.id]:
+        _face_challenges.pop(cid, None)
+    cid = secrets.token_urlsafe(24)
+    _face_challenges[cid] = {
+        "user_id": user.id,
+        "action": secrets.choice(FACE_ACTIONS),
+        "expires": time.time() + FACE_CHALLENGE_TTL,
+        "used": False,
+    }
+    return {
+        "challenge_id": cid,
+        "action": _face_challenges[cid]["action"],
+        "expires_in": FACE_CHALLENGE_TTL,
+        "threshold": FACE_MATCH_THRESHOLD,
+    }
+
+
+class FaceVerifyIn(BaseModel):
+    challenge_id: str = Field(min_length=8, max_length=128)
+    distance: float | None = None
+    liveness: str = Field(default="", max_length=32)
+    # The billing period selected on the pay screen (CafeLoop has ONE
+    # plan with a monthly/yearly toggle). Anything else falls back to
+    # the account's stored period choice.
+    period: str = Field(default="", max_length=16)
+
+
+@app.post("/api/face-unlock/verify")
+def face_unlock_verify(
+    body: FaceVerifyIn,
+    db: Session = Depends(get_db),
+    user: models.User | JSONResponse = Depends(current_user),
+):
+    """Confirm a scan. The challenge must be live, unused, this
+    owner's, with the liveness action the server chose and a match
+    distance under the threshold. Any verify attempt burns the
+    challenge (single-use). Success records the activation."""
+    if isinstance(user, JSONResponse):
+        return user
+    if _face_locked_out(user.id):
+        return err(
+            429,
+            "Face unlock is locked for 15 minutes after too many "
+            "failed attempts. Please ask CafeLoop to activate you from Control.",
+        )
+    if _face_template(db) is None:
+        return err(400, "Face unlock is not set up yet.")
+    if is_revoked(db, user.id):
+        return err(403, "⏸️ Your plan is currently off. Please contact CafeLoop to restart.")
+    ch = _face_challenges.get(body.challenge_id)
+    if (
+        ch is None
+        or ch["user_id"] != user.id
+        or ch["used"]
+        or time.time() > ch["expires"]
+    ):
+        _face_record_fail(user.id)
+        return err(400, "That face scan session has expired. Please start again.")
+    ch["used"] = True  # single-use — any attempt burns the challenge
+    if body.liveness != ch["action"]:
+        _face_record_fail(user.id)
+        logger.info(
+            "Face unlock failed for %s: liveness %r, wanted %r",
+            user.email, body.liveness, ch["action"],
+        )
+        return err(400, "The liveness check did not match. Please try again.")
+    if body.distance is None or body.distance > FACE_MATCH_THRESHOLD:
+        _face_record_fail(user.id)
+        logger.info(
+            "Face unlock failed for %s: distance %s over threshold",
+            user.email, body.distance,
+        )
+        return err(400, "That face did not match closely enough. Please try again.")
+    # Verified.
+    _face_fails.pop(user.id, None)
+    if subscription_info(db, user_id=user.id)["active"]:
+        state = get_plan_state(db, user_id=user.id)
+        state["ok"] = True
+        state["already_active"] = True
+        return state
+    period = body.period if body.period in ("monthly", "yearly") else _account_period(db, user)
+    state = _record_subscription_payment(
+        db, user, period, method="face_unlock"
+    )
+    if state is None:
+        return err(404, "Plan not found.")
+    logger.info(
+        "Face unlock ACTIVATED %s -> CafeLoop Pro (%s), amount ₹%s via face_unlock",
+        user.email, period, state["last_payment"]["amount"],
+    )
+    state["ok"] = True
+    return state
+
+
+# ---------------------------------------------------------------------------
 # Control page (/control) — server-rendered, warm light theme to match
 # the product. Login is the ADMIN_SECRET itself; while it is unset the
 # page does not exist.
@@ -2596,6 +2906,81 @@ input{width:100%;padding:12px 14px;border:1.5px solid #EAD9BC;border-radius:12px
 .tag-o{background:#FDECEC;color:#A33}
 .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 select{padding:9px;border:1.5px solid #EAD9BC;border-radius:10px;font-family:inherit;background:#FFFDF9}
+"""
+
+
+# Face enrollment on the Control page: lazy-loads face-api from
+# /static/face (vendored — no CDN), walks Farhan through three poses,
+# and posts ONLY the numeric descriptors to /api/admin/face-template.
+_CONTROL_FACE_JS = """
+(function(){
+  var btn = document.getElementById("face-reg-btn");
+  if (!btn) return;
+  var box = document.getElementById("face-reg"),
+      video = document.getElementById("ctl-face-video"),
+      step = document.getElementById("ctl-face-step"),
+      start = document.getElementById("ctl-face-start"),
+      stream = null, modelsOk = false;
+  btn.addEventListener("click", function(){
+    box.style.display = box.style.display === "none" ? "block" : "none";
+  });
+  function loadLib(){
+    return new Promise(function(res, rej){
+      if (window.faceapi) return res();
+      var s = document.createElement("script");
+      s.src = "/static/face/face-api.min.js";
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+  async function loadModels(){
+    if (modelsOk) return;
+    await loadLib();
+    await faceapi.nets.tinyFaceDetector.loadFromUri("/static/face");
+    await faceapi.nets.faceLandmark68Net.loadFromUri("/static/face");
+    await faceapi.nets.faceRecognitionNet.loadFromUri("/static/face");
+    modelsOk = true;
+  }
+  function wait(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+  async function capturePose(label){
+    step.textContent = label + " — hold still…";
+    var det = null, tries = 0;
+    while (tries < 48 && !det) {
+      det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+      if (!det) { tries++; await wait(250); }
+    }
+    if (!det) throw new Error("No face found. Face the camera in good light and try again.");
+    return Array.from(det.descriptor);
+  }
+  start.addEventListener("click", async function(){
+    start.disabled = true;
+    try {
+      step.textContent = "Loading the face tools…";
+      await loadModels();
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+      video.srcObject = stream;
+      await video.play();
+      var poses = [];
+      poses.push(await capturePose("Pose 1 of 3: look straight at the camera"));
+      poses.push(await capturePose("Pose 2 of 3: turn your head a little to YOUR left"));
+      poses.push(await capturePose("Pose 3 of 3: turn your head a little to YOUR right"));
+      step.textContent = "Saving your face template…";
+      var csrf = document.querySelector('input[name="csrf"]').value;
+      var r = await fetch("/api/admin/face-template", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ descriptors: poses, csrf: csrf })
+      });
+      if (!r.ok) throw new Error("Saving failed. Please try again.");
+      location.href = "/control?msg=" + encodeURIComponent("Your face is registered ✓ — cafes can now unlock with your face scan.");
+    } catch (e) {
+      step.textContent = (e && e.message) ? e.message : "Something went wrong. Please try again.";
+      start.disabled = false;
+    } finally {
+      if (stream) { stream.getTracks().forEach(function(t){ t.stop(); }); stream = null; }
+    }
+  });
+})();
 """
 
 
@@ -2654,6 +3039,35 @@ def _control_dashboard_html(db: Session, csrf: str, msg: str = "") -> str:
         f'<div class="stat"><b>₹{_inr(summary["total_collected"])}</b><span>Collected</span></div>'
         "</div>"
     )
+    tpl = _face_template(db)
+    if tpl is not None:
+        face_inner = (
+            '<span class="tag tag-g">Registered ✓</span></div>'
+            f'<p class="muted" style="margin-top:8px">{len(tpl["descriptors"])} pose(s) on file. When you visit a cafe, '
+            'the owner taps Pay and your face scan on their device unlocks '
+            "their app. Only the numeric template is stored — never a photo. "
+            "Re-registering replaces it.</p>"
+        )
+        face_btn = "Re-register my face"
+    else:
+        face_inner = (
+            '<span class="tag tag-d">Not registered</span></div>'
+            '<p class="muted" style="margin-top:8px">Register once — then, when you visit a cafe, the owner taps '
+            'Pay and your face scan on their device unlocks their app. '
+            "Only the numeric template is stored — never a photo.</p>"
+        )
+        face_btn = "Register my face"
+    parts.append(
+        '<div class="card"><div class="acct"><div><h3>Your face — cafe unlock</h3></div>'
+        + face_inner
+        + f'<div class="actions" style="margin-top:12px"><button class="btn btn-sm" style="background:linear-gradient(135deg,#FFB800,#FF7A00 55%,#E63329);color:#fff" id="face-reg-btn" type="button">{face_btn}</button></div>'
+        '<div id="face-reg" style="display:none;margin-top:14px">'
+        '<video id="ctl-face-video" autoplay playsinline muted style="width:100%;border-radius:14px;background:#000"></video>'
+        '<p class="muted" id="ctl-face-step" style="margin-top:10px">Tap "Start camera", then follow the three poses.</p>'
+        '<div class="actions" style="margin-top:12px"><button class="btn btn-grad" id="ctl-face-start" type="button">Start camera</button></div>'
+        "</div>"
+        "</div>"
+    )
     if not summary["accounts"]:
         parts.append('<div class="card"><p class="muted">No cafe accounts yet.</p></div>')
     for a in summary["accounts"]:
@@ -2680,6 +3094,7 @@ def _control_dashboard_html(db: Session, csrf: str, msg: str = "") -> str:
             '<button class="btn btn-sm btn-off" type="submit">Switch Off</button></form>'
             "</div></div>"
         )
+    parts.append("<script>" + _CONTROL_FACE_JS + "</script>")
     parts.append("</div></body></html>")
     return "".join(parts)
 

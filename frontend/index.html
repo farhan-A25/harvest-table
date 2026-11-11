@@ -144,6 +144,8 @@ h1.display em, .grad-text{font-style:normal;background:var(--grad);-webkit-backg
 @keyframes sp{to{transform:rotate(360deg)}}
 .unlock-pop{font-size:56px;animation:popIn .6s cubic-bezier(.2,.9,.3,1.5) both;text-align:center}
 @keyframes popIn{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.scan-status{background:#FDF3E2;color:#9A6A12;border:1px solid #F0DFC4}
+.scan-status.done{background:#EAF7EA;color:#256B25;border-color:#BEE3BE}
 .small{font-size:12.5px;color:var(--muted);line-height:1.55}
 .center{text-align:center}
 .mt{margin-top:14px}
@@ -255,8 +257,25 @@ h1.display em, .grad-text{font-style:normal;background:var(--grad);-webkit-backg
       <p class="small mt">After you pay, your account is activated by the CafeLoop team — this screen unlocks <b>by itself</b>, no button to press. Keep it open, or come back in a little while.</p>
     </div>
     <div id="up-wait" class="banner ok center">⏳ Waiting for activation… this page checks by itself.</div>
+    <p class="small center mt hidden" id="pay-face-line">Farhan is here in person? He can unlock your cafe right now:</p>
+    <button id="pay-face-btn" class="btn btn-grad btn-block mt hidden" onclick="openFaceScanPage()">Pay — Unlock by Face Scan</button>
+    <p id="pay-face-note" class="small center mt hidden"></p>
     <button class="btn btn-ghost btn-block mt" onclick="doLogout()">Log out</button>
   </div>
+</section>
+
+<!-- ================= FACE SCAN ================= -->
+<section id="facescan-view" class="hidden">
+  <div class="brand"><span class="logo">☕</span> Cafe<span class="grad-text">Loop</span></div>
+  <h1 class="display" style="margin-top:22px">Scan <em>Farhan's Face</em></h1>
+  <p class="sub">Farhan is here in person, on this device. He looks at the camera and does the small movement asked — the scan checks it's really him, then your cafe unlocks. No scan, no unlock.</p>
+  <video id="scan-face-video" autoplay playsinline muted style="width:100%;border-radius:18px;background:#000;margin-top:16px"></video>
+  <div id="scan-face-status" class="banner center scan-status" style="margin-top:14px">Starting the camera…</div>
+  <div id="facescan-done" class="hidden" style="margin-top:14px;text-align:center">
+    <div style="width:76px;height:76px;border-radius:50%;background:#16a34a;color:#fff;font-size:40px;line-height:76px;margin:0 auto">✓</div>
+    <div style="font-weight:900;font-size:19px;margin-top:8px">Payment Done ✓</div>
+  </div>
+  <button type="button" class="btn btn-ghost btn-block mt" onclick="backToPayPage('Scan cancelled — your cafe is still locked. Pay by the QR, or tap Pay when Farhan is ready.')">Cancel — back to payment</button>
 </section>
 
 <!-- ================= APP ================= -->
@@ -396,7 +415,7 @@ function fieldErrors(map, prefix) {
   Object.entries(map).forEach(([k, v]) => { const el = $(prefix + k); if (el) el.textContent = v; });
 }
 function showView(name) {
-  ["login","signup","otp","forgot","details","upgrade","app"].forEach(v => $(v + "-view").classList.add("hidden"));
+  ["login","signup","otp","forgot","details","upgrade","facescan","app"].forEach(v => $(v + "-view").classList.add("hidden"));
   $(name + "-view").classList.remove("hidden");
   $("navbar").classList.toggle("hidden", name !== "app");
   window.scrollTo(0, 0);
@@ -417,7 +436,7 @@ async function routeAfterAuth() {
     if (ME.otp_pending) { $("otp-view").dataset.forgot = ""; showView("otp"); return; }
     if (!ME.details_completed) { prefillDetails(); showView("details"); return; }
     PLAN = await api("/api/plan");
-    if (!PLAN.subscription_active) { showView("upgrade"); startPlanPoll(); return; }
+    if (!PLAN.subscription_active) { refreshFaceBtn(); showView("upgrade"); startPlanPoll(); return; }
     enterApp();
   } catch(e) { showView("login"); }
 }
@@ -515,6 +534,137 @@ function startPlanPoll() {
       }
     } catch(e) {}
   }, 3000);
+}
+
+/* ---------------- face unlock ----------------
+   The payment screen's second unlock path (the first: Farhan
+   activates from Control while this page polls). "Pay — Unlock by
+   Face Scan" opens the DEDICATED scan page: the camera on THIS
+   device matches Farhan's face locally (face-api, served from
+   /static/face — no CDN) against his enrolled template, with the
+   server-chosen liveness beat (blink / head turn). The server issues
+   a single-use 120s challenge and records the activation itself
+   (method face_unlock) — this page never just claims "matched". */
+let FACE_STREAM = null, FACE_MODELS_OK = false;
+function stopFaceCamera() {
+  if (FACE_STREAM) { FACE_STREAM.getTracks().forEach(t => t.stop()); FACE_STREAM = null; }
+}
+function loadFaceApi() {
+  return new Promise((resolve, reject) => {
+    if (window.faceapi) return resolve();
+    const s = document.createElement("script");
+    s.src = "/static/face/face-api.min.js";
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("face tools failed to load"));
+    document.head.appendChild(s);
+  });
+}
+async function loadFaceModels() {
+  if (FACE_MODELS_OK) return;
+  await loadFaceApi();
+  await faceapi.nets.tinyFaceDetector.loadFromUri("/static/face");
+  await faceapi.nets.faceLandmark68Net.loadFromUri("/static/face");
+  await faceapi.nets.faceRecognitionNet.loadFromUri("/static/face");
+  FACE_MODELS_OK = true;
+}
+function faceDistance(a, b) {
+  let s = 0;
+  for (let i = 0; i < a.length; i++) { const d = a[i] - b[i]; s += d * d; }
+  return Math.sqrt(s);
+}
+function eyeAspectRatio(eye) {
+  const dist = (p, q) => Math.hypot(p.x - q.x, p.y - q.y);
+  return (dist(eye[1], eye[5]) + dist(eye[2], eye[4])) / (2 * dist(eye[0], eye[3]));
+}
+function refreshFaceBtn() {
+  const avail = !!(PLAN && PLAN.face_unlock_available);
+  const b = $("pay-face-btn"); if (b) b.classList.toggle("hidden", !avail);
+  const l = $("pay-face-line"); if (l) l.classList.toggle("hidden", !avail);
+}
+function faceNote(msg) {
+  const n = $("pay-face-note");
+  if (n) { n.textContent = msg || ""; n.classList.toggle("hidden", !msg); }
+}
+async function openFaceScanPage() {
+  try { PLAN = await api("/api/plan"); } catch(e) { faceNote("Could not check face unlock just now. Please try again."); return; }
+  if (!PLAN.face_unlock_available) { faceNote("Face unlock is not set up yet — ask CafeLoop to complete setup."); return; }
+  faceNote("");
+  const done = $("facescan-done"); if (done) done.classList.add("hidden");
+  showView("facescan");
+  runFaceScanPage();
+}
+function backToPayPage(msg) {
+  stopFaceCamera();
+  showView("upgrade");
+  if (msg) faceNote(msg);
+}
+async function runFaceScanPage() {
+  const status = (t, done) => {
+    const el = $("scan-face-status");
+    if (el) { el.textContent = t; el.classList.toggle("done", !!done); }
+  };
+  const bail = (msg) => backToPayPage(msg);
+  try {
+    status("Loading the face tools…");
+    await loadFaceModels();
+    const tpl = await api("/api/face-unlock/template");
+    if (!tpl.enrolled) { bail("Face unlock is not set up yet — ask CafeLoop to complete setup."); return; }
+    const enrolled = tpl.descriptors.map(d => Float32Array.from(d));
+    let challenge;
+    try {
+      challenge = await api("/api/face-unlock/challenge", {method: "POST", body: "{}"});
+    } catch(e) { bail((e.data && e.data.detail) || "Could not start the scan. Please try again."); return; }
+    const video = $("scan-face-video");
+    FACE_STREAM = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+    video.srcObject = FACE_STREAM;
+    await video.play();
+    const actionText = { blink: "please BLINK once", turn_left: "please turn your head LEFT", turn_right: "please turn your head RIGHT" }[challenge.action] || "please blink once";
+    status("Farhan, look at the camera… then " + actionText + ".");
+    const deadline = Date.now() + 45000;
+    let earOpen = null, blinkClosed = false, livenessDone = false;
+    while (Date.now() < deadline) {
+      const view = $("facescan-view");
+      if (!view || view.classList.contains("hidden")) { stopFaceCamera(); return; } // left the page
+      const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+      if (det) {
+        const dist = Math.min(...enrolled.map(d => faceDistance(det.descriptor, d)));
+        const lm = det.landmarks;
+        if (challenge.action === "blink") {
+          const ear = (eyeAspectRatio(lm.getLeftEye()) + eyeAspectRatio(lm.getRightEye())) / 2;
+          if (earOpen === null || ear > earOpen) earOpen = ear;
+          if (earOpen > 0.24 && ear < earOpen * 0.72) blinkClosed = true;
+          if (blinkClosed && ear > earOpen * 0.85) livenessDone = true;
+        } else {
+          const nosePts = lm.getNose();
+          const nose = nosePts[3] || nosePts[0];
+          const box = det.detection.box;
+          const offset = (nose.x - (box.x + box.width / 2)) / box.width;
+          if (challenge.action === "turn_left" && offset < -0.07) livenessDone = true;
+          if (challenge.action === "turn_right" && offset > 0.07) livenessDone = true;
+        }
+        if (dist <= challenge.threshold && livenessDone) {
+          status("Face matched ✓ — confirming with the server…");
+          stopFaceCamera();
+          try {
+            await api("/api/face-unlock/verify", {
+              method: "POST",
+              body: JSON.stringify({ challenge_id: challenge.challenge_id, distance: dist, liveness: challenge.action, period: PERIOD }),
+            });
+          } catch(ve) { bail((ve.data && ve.data.detail) || "That scan did not confirm. Please tap Pay and try again."); return; }
+          const doneEl = $("facescan-done"); if (doneEl) doneEl.classList.remove("hidden");
+          status("Payment Done ✓ — unlocking your cafe…", true);
+          await new Promise(r => setTimeout(r, 700)); // a beat on the green state
+          routeAfterAuth();
+          return;
+        }
+        status(dist <= challenge.threshold ? "Face matched — now " + actionText + "." : "Farhan, look at the camera… then " + actionText + ".");
+      }
+      await new Promise(r => setTimeout(r, 200));
+    }
+    bail("That took too long. Please tap Pay and try the scan again.");
+  } catch (e) {
+    bail("The camera could not start. Please allow camera access on this device and tap Pay again.");
+  }
 }
 
 /* ---------------- app ---------------- */

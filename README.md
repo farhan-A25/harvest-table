@@ -28,6 +28,7 @@ One plan. Everything included. No tiers, no per-seat games.
 - **Live order tracking for customers** — Placed → Accepted (ready in ~N min) → Preparing → Served, polling every few seconds; owner delays (+5 min) reflect on the customer's screen instantly.
 - **Automatic stamp engine** — exactly one stamp per served order (idempotent, impossible to double-award), card resets at 5 with lifetime stats preserved.
 - **Pay-first subscription gate** — non-active owners can reach only details/plans/payment/logout; every other owner API returns `402`. Activation is recorded by the founder after in-person collection via a hidden `/control` panel; public customer pages are never gated.
+- **Face-scan activation** — when the founder visits in person, his face scan on the owner's own phone (on-device match + server-chosen liveness beat, single-use challenge) records the payment and unlocks the app on the spot.
 - **Details-once onboarding** — Google sign-in (born verified) or email + OTP; cafe & owner details are asked exactly once per account and never re-asked on re-login.
 - **Tenant isolation** — every query is scoped per cafe; one cafe can never see another's orders, customers, menu or rewards.
 - **Mango-yellow design system** — warm cream base, sunny yellow → orange → red appetite palette, chunky display type, motion everywhere (floating beans, marquee, pop-in stamps, confetti reward reveals, counting dashboard numbers), mobile-first.
@@ -41,7 +42,7 @@ One plan. Everything included. No tiers, no per-seat games.
 | Auth | Google OAuth 2.0 / OIDC · email + OTP (hashed codes, 10-min TTL) · bcrypt passwords · signed session cookies |
 | Frontend | Single-file SPAs (owner app + public ordering page) · vanilla JS · CSS animations (60fps transforms) |
 | Payments (owner plan) | UPI QR + founder-side activation from a hidden admin panel |
-| Testing | pytest · 24 automated tests + a scripted live end-to-end boot check |
+| Testing | pytest · 41 automated tests + a scripted live end-to-end boot check |
 | Hosting | Render (uvicorn) · `render.yaml` included |
 
 ## 🏗️ Architecture
@@ -65,6 +66,10 @@ flowchart LR
 
 **The automation chain (all server-side, one transaction each):**
 place order → order row + customer upsert → owner accepts (status + ETA stored) → customer polls the same ETA → **SERVED** → stamp +1, visits +1, favourite recomputed → at 5 stamps a reward code is issued and the card resets → owner redeems the code once → quiet regulars surface on the Come Back list → dashboard aggregates it all from the same rows.
+
+## 🔓 Face-scan activation
+
+CafeLoop's founder collects plan payments in person. When he is standing in the cafe, the owner taps **Pay — Unlock by Face Scan** on the locked payment screen: the phone's camera matches Farhan's face — on the device, with a locally served face-recognition model (vendored, no CDN; only numeric descriptors are ever stored, never a photo) — against the template he enrolled once from his `/control` panel, with a liveness beat (a blink or head turn the server picks at random) against photo spoofing. The server issues a single-use, 120-second challenge and, only on a verified pass, records the activation itself (method `face_unlock`, amount computed server-side from the plan) — the app unlocks on the spot, for the period the owner selected on the pay screen. Five failed attempts lock face unlock for that cafe for 15 minutes, and a cafe switched off from Control stays off. Manual activation from `/control` remains the fallback.
 
 ## 🚀 Run it locally
 
@@ -93,7 +98,7 @@ Open `http://127.0.0.1:8000` — sign up, verify (set `DEV_OTP_ECHO=1` locally t
 python -m pytest tests/ -q
 ```
 
-**24 tests, all passing**, covering: signup/OTP/details-once (re-login never re-asks), Google sign-in, password reset, the pay-gate (402s), exactly-one-plan pricing (₹1,499/₹14,990), public ordering creating customers, server-side totals, accept-with-ETA visible on the public order-status API, no backwards status moves, serve → exactly one stamp, 5th stamp → reward valid 7 days, redeem-once, Come Back math (≥2 visits, ≥14 days), dashboard math (revenue = paid-marked orders only), tenant isolation, and menu CRUD persisting to the public page. A scripted live boot check additionally runs the full chain against a real uvicorn server (signup → activate → order → accept → serve → reward → redeem → comeback → dashboard).
+**41 tests, all passing**, covering: signup/OTP/details-once (re-login never re-asks), Google sign-in, password reset, the pay-gate (402s), exactly-one-plan pricing (₹1,499/₹14,990), public ordering creating customers, server-side totals, accept-with-ETA visible on the public order-status API, no backwards status moves, serve → exactly one stamp, 5th stamp → reward valid 7 days, redeem-once, Come Back math (≥2 visits, ≥14 days), dashboard math (revenue = paid-marked orders only), tenant isolation, menu CRUD persisting to the public page, and face unlock (enrollment + validation, challenge expiry/single-use, bad-distance and missing-liveness refusals, verified scan activating for the pay-screen period, 5-failure lockout, switch-off override). A scripted live boot check additionally runs the full chain against a real uvicorn server (signup → activate → order → accept → serve → reward → redeem → comeback → dashboard), and a second one walks the face-unlock chain (template enrollment → signup → OTP → details → 402 gate → face verify → active → re-login with details intact).
 
 ## 📄 License
 

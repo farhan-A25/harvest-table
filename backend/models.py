@@ -89,13 +89,30 @@ class AdminAction(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
 
+class FaceTemplate(Base):
+    """Farhan's enrolled face template for face unlock (singleton row).
+
+    ONLY the numeric face descriptors computed in his browser during
+    enrollment (a JSON list of 128-float arrays, one per pose) — never
+    a photo. Re-registering from Control replaces the descriptors.
+    """
+
+    __tablename__ = "face_templates"
+
+    id = Column(Integer, primary_key=True)
+    descriptors = Column(Text, nullable=False, default="[]")
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class SubscriptionPayment(Base):
     """One recorded subscription payment for using this app.
 
-    A row is written when a payment is CONFIRMED — in the launch model
-    only by Farhan's admin activation after in-person collection
-    (method "collected_in_person"). Amounts are always computed
-    server-side from billing.py — never taken from the client.
+    A row is written when a payment is CONFIRMED — by Farhan's admin
+    activation after in-person collection (method
+    "collected_in_person") or by a verified face-scan unlock on the
+    owner's device after the same in-person collection (method
+    "face_unlock"). Amounts are always computed server-side from
+    billing.py — never taken from the client.
     """
     __tablename__ = "subscription_payments"
 
